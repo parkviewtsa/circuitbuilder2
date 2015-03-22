@@ -1,4 +1,4 @@
-#include <SDL.h>
+#include <SDL2\SDL.h>
 #include <stdlib.h>
 typedef unsigned long cbIndex;
 typedef double cbScalar;
@@ -124,13 +124,21 @@ void cbRenderComponents ()
 #define SDL_main main
 #include <stdio.h>
 #include <SDL_image.h>
+#define SampleImagePath "ticktock.bmp"
 int main ()
 {
-    SDL_Init(SDL_INIT_EVERYTHING);
-    SDL_Window* window = SDL_CreateWindow("#YOLOSWAG!!!",SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,1280,720,0);
-    SDL_Surface* ticktock = IMG_Load("")
-    if (!window) printf("You failed, noob.\n");
-    SDL_Delay(1000);
+    if (SDL_Init(SDL_INIT_EVERYTHING)) printf("Could not initialize SDL.\n");
+    SDL_Window* window = SDL_CreateWindow("Circuit Builder",SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,1280,720,0);
+    SDL_Surface* ticktock = IMG_Load(SampleImagePath);
+    if (!ticktock) printf("Could not load sample image (" SampleImagePath ").\n");
+    if (!window) printf("Could not initialize window.\n");
+    while (true)
+	{
+		SDL_Event event;
+		while (SDL_PollEvent(&event)) if (event.type == SDL_QUIT) goto QUIT;
+	};
+	QUIT:
+	SDL_FreeSurface(ticktock);
     SDL_DestroyWindow(window);
     SDL_Quit();
 };
