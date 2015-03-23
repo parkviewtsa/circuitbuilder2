@@ -1,5 +1,7 @@
 #include <SDL2\SDL.h>
 #include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 typedef unsigned long cbIndex;
 typedef double cbScalar;
 struct cbVec2

@@ -24,8 +24,8 @@ cbIndex DropDownTabCount;
 #define DropDownProtoPath "menus.txt"
 void StringAppend (char** to, char additional)
 {
-	size_t len = strlen(*to); 
-	if (len % *to = realloc(*to,len + 2);
+	size_t len = strlen(*to);
+	*to = realloc(*to,len + 2);
 	*(to + len) = additional;
 	*(to + (len + 1)) = '\0';
 };
@@ -44,10 +44,10 @@ void LoadDropDownMenus ()
 		Step 4: Get Hotkey
 		Step 5: Stack All
 	*/
-	
+
 	// Step 1 - load
 	FILE* file = fopen(DropDownProtoPath,"r");
-	DropDownItem** protoitems = NULL;
+	char** protoitems = NULL;
 	cbIndex protocount = 0;
 	int cc;
 	char* temp;
@@ -55,7 +55,7 @@ void LoadDropDownMenus ()
 	{
 		cc = fgetc(file);
 		if (cc == EOF) break;
-		if (cc == '\n') 
+		if (cc == '\n')
 		{
 			AddToList(&protoitems,&protocount,temp);
 			temp = NULL;
@@ -63,10 +63,9 @@ void LoadDropDownMenus ()
 		else StringAppend(&temp,cc);
 	};
 	fclose(file);
-	
+
 	// Step 2 - levels
 	cbIndex tabcount = protocount;
-	DropDownItem* alltabs = malloc(sizeof(DropDownItem) * protocount);
 	cbIndex lastlevel = 0;
 	cbIndex total_toplevel = 0;
 	cbIndex i,j;
@@ -99,7 +98,7 @@ void LoadDropDownMenus ()
 		else total_toplevel++;
 		lastlevel = level;
 	};
-	
+
 	// Step 3 - icons
 	char** iconpaths = malloc(sizeof(char*) * protocount);
 	for (i = 0; i < protocount; i++)
@@ -109,7 +108,7 @@ void LoadDropDownMenus ()
 		for (j = 0; j < len; j++) if (*(temp + j) == '$') goto ICONPATH;
 		*(iconpaths + i) = NULL;
 		continue;
-		ICONPATH: 
+		ICONPATH:
 		without = malloc(j + 1);
 		memcpy(without,temp,j);
 		*(without + j) = '\0';
@@ -122,7 +121,7 @@ void LoadDropDownMenus ()
 		*(iconpaths + i) = iconpath;
 		free(temp);
 	};
-	
+
 	// Step 4 - hotkeys
 	char* hotkeys = malloc(protocount);
 	for (i = 0; i < protocount; i++)
@@ -135,26 +134,26 @@ void LoadDropDownMenus ()
 		j++;
 		if (j < len) *(hotkeys + i) = *(temp + j);
 	};
-	
+
 	// Step 5 - stacking
-	
-	
+	DropDownItem* alltabs = malloc(sizeof(DropDownItem) * protocount);
+	DropDownTabCount = total_toplevel;
 };
 void CheckClick (int x, int y)
 {
 	// See if anything was clicked, and if so, take the appropriate action
 };
-void RenderTab (DropDownTab torender)
+void RenderTab (DropDownItem torender)
 {
-	SDL_RenderFillRect(/*...*/);
+	//SDL_RenderFillRect(/*...*/);
 };
-void RenderSubTabs (DropDownTab* from)
+void RenderSubTabs (DropDownItem* from)
 {
-	DropDownTab* lower = NULL;
-	for (i = 0; i < from->tabcount; i++) 
+	DropDownItem* lower = NULL;
+	for (cbIndex i = 0; i < from->subcount; i++)
 	{
-		DropDownTab sub = *(from->tabs + i);
-		if (sub.active) lower = from->tabs + i;
+		DropDownItem sub = *(from->subitems + i);
+		if (sub.active) lower = from->subitems + i;
 		RenderTab(sub);
 	};
 	if (lower) RenderSubTabs(lower);
@@ -165,8 +164,8 @@ void DrawAllTabs ()
 	cbIndex i = 0;
 	for (i = 0; i < DropDownTabCount; i++)
 	{
-		DropDownTab* tab = DropDownTabs + i;
-		if (tab->active) 
+		DropDownItem* tab = DropDownTabs + i;
+		if (tab->active)
 		{
 			SDL_SetRenderDrawColor(renderer,DropDownItemColor_R,DropDownItemColor_G,DropDownItemColor_B,SDL_ALPHA_OPAQUE);
 			RenderSubTabs(tab);
