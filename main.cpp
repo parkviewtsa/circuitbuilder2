@@ -6,6 +6,7 @@ struct cbVec2
 {
 	cbScalar x,y;
 };
+#include <menu.h>
 struct cbLD_Circle
 {
 	cbScalar radius;
@@ -128,17 +129,53 @@ void cbRenderComponents ()
 int main ()
 {
     if (SDL_Init(SDL_INIT_EVERYTHING)) printf("Could not initialize SDL.\n");
-    SDL_Window* window = SDL_CreateWindow("Circuit Builder",SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,1280,720,0);
+    SDL_Window* window = SDL_CreateWindow("Circuit Builder",SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,1280,720,SDL_WINDOW_RESIZABLE);
+    if (!window) printf("Could not initialize window.\n");
+    SDL_Renderer* renderer = SDL_CreateRenderer(window,-1,SDL_RENDERER_PRESENTVSYNC);
+    if (!renderer) printf("Could not initialize renderer.\n");
     SDL_Surface* ticktock = IMG_Load(SampleImagePath);
     if (!ticktock) printf("Could not load sample image (" SampleImagePath ").\n");
-    if (!window) printf("Could not initialize window.\n");
+    SDL_Texture* ticktocktex = SDL_CreateTextureFromSurface(renderer,ticktock);
+    if (!ticktocktex) printf("Could not create texture from surface.\n");
+    int image_w = ticktock->w;
+    int image_h = ticktock->h;
+	cbScalar imageaspect = image_w / (cbScalar)image_h;
+	SDL_FreeSurface(ticktock);
+	cbIndex frame_id = 0;
+	SDL_SetRenderDrawColor(renderer,255,255,255,255);
     while (true)
 	{
 		SDL_Event event;
 		while (SDL_PollEvent(&event)) if (event.type == SDL_QUIT) goto QUIT;
+		frame_id++;
+		SDL_RenderFillRect(renderer,NULL);
+		int screen_w;
+		int screen_h;
+		SDL_GetWindowSize(window,&screen_w,&screen_h);
+		cbScalar screenaspect = screen_w / (cbScalar)screen_h;
+		SDL_Rect drawrect;
+		if (screenaspect > imageaspect)
+		{
+			/// Screen is wider than image.
+			drawrect.w = screen_w * (imageaspect / screenaspect);
+			drawrect.x = (screen_w - drawrect.w) / 2;
+			drawrect.y = 0;
+			drawrect.h = screen_h;
+		}
+		else
+		{
+			/// Screen is taller than image.
+			drawrect.h = screen_h * (screenaspect / imageaspect);
+			drawrect.y = (screen_h - drawrect.h) / 2;
+			drawrect.x = 0;
+			drawrect.w = screen_w;
+		};
+		SDL_RenderCopy(renderer,ticktocktex,NULL,&drawrect);
+		SDL_RenderPresent(renderer);
 	};
 	QUIT:
-	SDL_FreeSurface(ticktock);
+	SDL_DestroyTexture(ticktocktex);
+	SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
 };
