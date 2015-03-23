@@ -1,0 +1,7 @@
+*File
+-*Save$disk.png
+-Save *As$disk.png
+-*Open$folder.png
+*Edit
+-*Undo$counterclockwise.png
+-*Redo$clockwise.png
