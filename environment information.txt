@@ -1,0 +1,45 @@
+IDE: Code::Blocks (Recommendation)
+
+http://www.codeblocks.org/downloads/26
+
+--
+
+Compiler: MinGW
+
+http://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win32/Personal%20Builds/mingw-builds/installer/mingw-w64-install.exe/download
+
+When installing, choose the following options.
+Version: "4.9.2"
+Architecture: "i686"
+Threads: "win32"
+Exception: "sjlj"
+Build Revision: "2"
+
+--
+
+Library: SDL 2.0.3
+
+http://libsdl.org/release/SDL2-devel-2.0.3-mingw.tar.gz
+
+Library: SDL_Image 2.0.0
+
+https://www.libsdl.org/projects/SDL_image/release/SDL2_image-devel-2.0.0-mingw.tar.gz
+
+When adding directories to your IDE and copying the library binaries into your build folder, use the "i686" folder, not "x86-64".
+
+--
+
+Compiler Settings: Required
+"-fpermissive"
+
+Compiler Settings: Recommendations
+"-w"
+"-s"
+"-O"
+"-O1"
+"-O2"
+"-Os"
+"-fomit-frame-pointer"
+
+You may also optionally select a CPU-specific optimization for your local build, such as "-march=athlon-fx".
+
