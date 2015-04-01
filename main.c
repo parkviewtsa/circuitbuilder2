@@ -1,10 +1,16 @@
 /// Later I will clean up all of this back-end stuff: organize it and make it into a single include.
-#include <SDL2\SDL.h>
+
+#define SDL_main main
+
+#include <SDL2/SDL.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#define SDL_main main
-#include <SDL2\SDL_image.h>
+#include <SDL2/SDL_image.h>
+
+#include "menu-callback.h"
+#include "menu.h"
+
 typedef unsigned long cbIndex;
 typedef double cbScalar;
 struct cbVec2
@@ -226,8 +232,7 @@ bool CheckInput ()
 	};
 	return true;
 };
-#include <menu-callback.h>
-#include <menu.h>
+
 int main ()
 {
     if (SDL_Init(SDL_INIT_EVERYTHING)) printf("Could not initialize SDL.\n");
