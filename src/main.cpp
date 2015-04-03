@@ -1,15 +1,11 @@
 /// Later I will clean up all of this back-end stuff: organize it and make it into a single include.
 
-#define SDL_main main
-
 #include <SDL2/SDL.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#define SDL_main main
 #include <SDL2/SDL_image.h>
-
-#include "menu-callback.h"
-#include "menu.h"
 
 typedef unsigned long cbIndex;
 typedef double cbScalar;
@@ -232,6 +228,9 @@ bool CheckInput ()
 	};
 	return true;
 };
+
+#include "menu-callback.h"
+#include "menu.h"
 
 int main ()
 {
