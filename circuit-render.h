@@ -11,13 +11,26 @@ typedef unsigned int crIndex;
 #endif
 #include <stdlib.h>
 #include <stdio.h>
+<<<<<<< HEAD
 #include "circuit-render-error.h"
 struct crLine
+=======
+#include <circuit-render-error.h>
+#include <circuit-render-proto.h>
+struct crItem
+>>>>>>> 5c8311a880f6174a383646ffcf91216855cf893e
 {
-	crScalar x1,y1,x2,y2;
+	crProto* proto;
+	crScalar posx,posy;
 };
-struct crProto
+/// The reason crItems is not a single-block list is
+/// so that expanding the list of items does not break
+/// the application's references to previously created items.
+crItem** crItems = NULL;
+crIndex crItemCount = 0;
+crItem* crCreateItem (char* path) // Returns NULL if something went wrong.
 {
+<<<<<<< HEAD
 	crLine* lines;
 	crIndex linecount;
 	char* loadedfrom;
@@ -75,4 +88,7 @@ bool crRequireProto (char* path) /// Returns presence of an error. (false: no er
 
 
 	return false;
+=======
+	if (crRequireProto(path)) return; // crLastError will remain from the lower level.
+>>>>>>> 5c8311a880f6174a383646ffcf91216855cf893e
 };
