@@ -1,3 +1,4 @@
+#define crShowWindow
 #include <circuit-render.h>
 int main ()
 {
@@ -8,6 +9,9 @@ int main ()
 	printf("SDL Initialized: %s\n",crInit() ? "Nope" : "YES!");
 	printf("Window: %X\n",crWindow);
 	printf("Renderer: %X\n",crRenderer);
-	printf("\nPRESS ENTER TO CLOSE\n");
-	getchar();
+	while (!SDL_QuitRequested())
+	{
+		crDraw();
+		SDL_Delay(1000);
+	};
 };

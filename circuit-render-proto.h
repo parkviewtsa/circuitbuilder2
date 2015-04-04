@@ -34,7 +34,7 @@ crProto* crRequireProto (char* path) /// If NULL, something went wrong.
 		crLastError = crError_NoProtoFile;
 		return NULL;
 	};
-	crIndex linecount;
+	long unsigned linecount;
 	// Get number of lines.
 	if (!fscanf(file,"%lu",&linecount))
 	{
@@ -64,7 +64,7 @@ crProto* crRequireProto (char* path) /// If NULL, something went wrong.
 	item->loadedfrom = path;
 	for (i; i < linecount; i++)
 	{
-		crScalar x1,y1,x2,y2;
+		double x1,y1,x2,y2;
 		if (fscanf(file,"%lf%lf%lf%lf",&x1,&y1,&x2,&y2) < 4)
 		{
 			crLastError = crError_BadProtoFile;
