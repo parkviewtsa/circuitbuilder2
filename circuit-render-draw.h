@@ -33,25 +33,38 @@ bool crInit () // true: failure, false: success
 	};
 	return false;
 };
-#define crRound(n) (int)(n + 0.5)
+#define crDrawRound(n) (int)(n + 0.5)
+crScalar crViewZoom = 0.1;
+crScalar crViewOffsetX = -0.1;
+crScalar crViewOffsetY = -0.8;
 void crDraw ()
 {
-	printf("CYCLE START\n");
+	int winsizex,winsizey;
+	SDL_GetWindowSize(crWindow,&winsizex,&winsizey);
 	SDL_SetRenderDrawColor(crRenderer,0,0,0,0);
 	SDL_RenderClear(crRenderer);
 	SDL_SetRenderDrawColor(crRenderer,255,255,255,255);
 	for (crIndex i = 0; i < crItemCount; i++)
 	{
-		printf("\tDRAWING ITEM #%d OUT OF %d\n",i + 1,crItemCount);
 		crItem* item = *(crItems + i);
 		for (crIndex j = 0; j < item->proto->linecount; j++)
 		{
-			printf("\t\tDRAWING LINE #%d OUT OF %d\n",j + 1,item->proto->linecount);
 			crLine line = *(item->proto->lines + j);
-			SDL_RenderDrawLine(crRenderer,crRound(line.x1 * 1280),crRound(line.y1 * 720),crRound(line.x2 * 1280),crRound(line.y2 * 720)); // Render coords are not normalized.
-			printf("\t\tx1: %d\ty1: %d\tx2: %d\ty2: %d\n",crRound(line.x1 * 1280),crRound(line.y1 * 720),crRound(line.x2 * 1280),crRound(line.y2 * 720));
+			line.x1 += item->posx - crViewOffsetX;
+			line.y1 += item->posy - crViewOffsetY;
+			line.x2 += item->posx - crViewOffsetX;
+			line.y2 += item->posy - crViewOffsetY;
+			SDL_RenderDrawLine(
+				crRenderer,
+				crDrawRound((line.x1 * crViewZoom) * winsizex),
+				crDrawRound((line.y1 * crViewZoom) * winsizex),
+				crDrawRound((line.x2 * crViewZoom) * winsizex),
+				crDrawRound((line.y2 * crViewZoom) * winsizex)
+			);
+			// Render coords are not normalized.
+			// This is using winsizex only, because using
+			// winsizex and winsizey will not preserve aspect ratio.
 		};
 	};
-	printf("PRESENTING\n\n");
 	SDL_RenderPresent(crRenderer);
 };
