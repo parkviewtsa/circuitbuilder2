@@ -1,0 +1,27 @@
+crItem* DrawItem = crCreateItem("resistor.cbip");
+// Now you have a draw object.
+// It will be drawn in future calls to crDraw() along with all other draw objects.
+DrawItem->posx = 0;
+DrawItem->posy = 0;
+// Now it is centered at the origin. (There is no default position.)
+crDraw();
+// You have just rendered to the internal window.
+// In the future this function may return a pixel buffer or something.
+crDestroyItem(DrawItem);
+// This draw object has been removed and its memory has been deallocated.
+// It will not be drawn in subsequent calls to crDraw().
+// Attempting to set its memory after destruction will crash the application.
+
+
+
+Draw objects have no properties aside from their positions in the world,
+and the prototype (line group) for drawing.
+
+
+
+- Example of Usage -
+struct cbResistor
+{
+	crItem* drawitem;
+	float ohms;
+};
