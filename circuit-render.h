@@ -46,3 +46,4 @@ crItem* crCreateItem (char* path) // Returns NULL if something went wrong.
 	crProtoCount++;
 	return out;
 };
+#include <circuit-render-draw.h>
