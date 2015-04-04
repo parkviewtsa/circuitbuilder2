@@ -1,8 +1,8 @@
-debug: src/main.cpp
-	mkdir out
-	gcc src/main.cpp -o out/circuitbuilder
+renderer:
+	gcc src/circuit-render.cpp src/circuit-render-test.cpp \
+	src/circuit-render-proto.cpp -o out/renderer
 
 .PHONY: clean
 
 clean:
-	rm -rf out
+	rm -rf out/*
