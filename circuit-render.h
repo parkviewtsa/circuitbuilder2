@@ -1,7 +1,4 @@
 #pragma once
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 #ifdef crUseDoubles
 typedef double crScalar;
 #else
@@ -12,6 +9,8 @@ typedef unsigned long crIndex;
 #else
 typedef unsigned int crIndex;
 #endif
+#include <stdlib.h>
+#include <stdio.h>
 #include <circuit-render-error.h>
 #include <circuit-render-proto.h>
 struct crItem
