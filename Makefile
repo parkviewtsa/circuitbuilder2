@@ -1,6 +1,6 @@
 renderer:
-	gcc src/circuit-render.cpp src/circuit-render-test.cpp \
-	src/circuit-render-proto.cpp -o out/renderer
+	gcc -fpermissive circuit-render-test.cpp -I . -L /usr/lib/x86_64-linux-gnu \
+	-lSDL2-2.0 -o out/renderer
 
 .PHONY: clean
 
