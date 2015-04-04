@@ -11,7 +11,7 @@ typedef unsigned int crIndex;
 #endif
 #include <stdlib.h>
 #include <stdio.h>
-#include <circuit-render-error.h>
+#include "circuit-render-error.h"
 struct crLine
 {
 	crScalar x1,y1,x2,y2;
@@ -45,7 +45,7 @@ bool crRequireProto (char* path) /// Returns presence of an error. (false: no er
 		return true;
 	};
 	// Get actual lines.
-	crLine* lines = malloc(sizeof(crLine) * linecount);
+	crLine* lines = (crLine *)malloc(sizeof(crLine) * linecount);
 	if (!lines)
 	{
 		// That memory was really important to me.
