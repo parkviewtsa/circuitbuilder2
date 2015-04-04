@@ -1,5 +1,5 @@
 #pragma once
-#define SDL_main main
+//#define SDL_main main
 #include <SDL2/SDL.h>
 SDL_Window* crWindow = NULL;
 SDL_Renderer* crRenderer = NULL;
