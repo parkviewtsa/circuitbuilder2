@@ -39,7 +39,7 @@ crItem* crCreateItem (char* path) // Returns NULL if something went wrong.
 	if (!crItems)
 	{
 		// You done screwed it up, now. *cough* thanks a lot windows *cough*
-		printf("Fatal allocation failure: crItems main list block realloc\n");
+		printf("Fatal allocation failure: crItems main list block realloc, during grow\n");
 		exit(-1);
 	};
 	*(crItems + crItemCount) = out;
@@ -47,3 +47,28 @@ crItem* crCreateItem (char* path) // Returns NULL if something went wrong.
 	return out;
 };
 #include <circuit-render-draw.h>
+void crDestroyItem (crItem* todel)
+{
+	for (crIndex i = 0; i < crItemCount; i++)
+	{
+		crItem* item = *(crItems + i);
+		if (item == todel)
+		{
+			crItemCount--;
+			while (i < crItemCount)
+			{
+				*(crItems + i) = *(crItems + (i + 1));
+				i++;
+			};
+			crItems = realloc(crItems,sizeof(void*) * crItemCount);
+			if (!crItems)
+			{
+				// You done screwed it up, now. *cough* thanks a lot windows *cough*
+				printf("Fatal allocation failure: crItems main list block realloc, during shrink\n");
+				exit(-1);
+			};
+			break;
+		};
+	};
+	free(todel);
+};
