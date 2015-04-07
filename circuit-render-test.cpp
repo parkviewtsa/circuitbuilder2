@@ -1,9 +1,15 @@
 #define crShowWindow
 #include <circuit-render.h>
 /// Include the implementation specifically if not using the Code::Blocks project.
-#include <circuit-render.cpp>
+//#include <circuit-render.cpp>
 int main ()
 {
+	// Technically we do not have to initialize the
+	// circuit renderer in order to load prototypes
+	// and create draw instances. The only thing we
+	// can't do until it is initialized is actually
+	// draw a frame.
+
 	// ".cbip" for "Circuit Builder Item Prototype"
 	crItem* example = crCreateItem("example-proto.cbip");
 	example->posx = 0;

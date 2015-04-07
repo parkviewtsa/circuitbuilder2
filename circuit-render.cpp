@@ -1,4 +1,5 @@
 #include <circuit-render.h>
+#define crShowWindow
 
 
 
