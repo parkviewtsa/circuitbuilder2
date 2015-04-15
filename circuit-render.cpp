@@ -19,14 +19,14 @@ crItem* crCreateItem (char* path) // Returns NULL if something went wrong.
 {
 	crProto* proto = crRequireProto(path);
 	if (!proto) return NULL; // crLastError will remain from the lower level.
-	crItem* out = (crItem *)malloc(sizeof(crItem));
+	crItem* out = (crItem*)malloc(sizeof(crItem));
 	if (!out)
 	{
 		crLastError = crError_FailedAlloc;
 		return NULL;
 	};
 	out->proto = proto;
-	crItems = (crItem **)realloc(crItems,sizeof(void*) * (crItemCount + 1));
+	crItems = (crItem**)realloc(crItems,sizeof(void*) * (crItemCount + 1));
 	if (!crItems)
 	{
 		// You done screwed it up, now. *cough* thanks a lot windows *cough*
@@ -50,7 +50,7 @@ void crDestroyItem (crItem* todel)
 				*(crItems + i) = *(crItems + (i + 1));
 				i++;
 			};
-			crItems = (crItem **)realloc(crItems,sizeof(void*) * crItemCount);
+			crItems = (crItem**)realloc(crItems,sizeof(void*) * crItemCount);
 			if (!crItems)
 			{
 				// You done screwed it up, now. *cough* thanks a lot windows *cough*
@@ -96,7 +96,7 @@ crProto* crRequireProto (char* path) /// If NULL, something went wrong.
 		return NULL;
 	};
 	// Get actual lines.
-	crLine* lines = (crLine *)malloc(sizeof(crLine) * linecount);
+	crLine* lines = (crLine*)malloc(sizeof(crLine) * linecount);
 	if (!lines)
 	{
 		// That memory was really important to me.
@@ -104,7 +104,7 @@ crProto* crRequireProto (char* path) /// If NULL, something went wrong.
 		fclose(file); // Let it go. Else the file will be frozen until the app exits.
 		return NULL;
 	};
-	item = (crProto *)malloc(sizeof(crProto));
+	item = (crProto*)malloc(sizeof(crProto));
 	if (!item)
 	{
 		// That memory was really important to me.
@@ -133,7 +133,7 @@ crProto* crRequireProto (char* path) /// If NULL, something went wrong.
 	};
 	fclose(file);
 	// Now add this to the archive.
-	crProtos = (crProto **)realloc(crProtos, sizeof(void *)*(crProtoCount + 1));
+	crProtos = (crProto**)realloc(crProtos,sizeof(void*) * (crProtoCount + 1));
 	if (!crProtos)
 	{
 		// You done screwed it up, now. *cough* thanks a lot windows *cough*
