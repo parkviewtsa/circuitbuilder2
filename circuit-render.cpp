@@ -115,7 +115,7 @@ crProto* crRequireProto (char* path) /// If NULL, something went wrong.
 	item->linecount = linecount;
 	item->lines = lines;
 	item->loadedfrom = path;
-	for (i; i < linecount; i++)
+	for (i = 0; i < linecount; i++)
 	{
 		double x1,y1,x2,y2;
 		if (fscanf(file,"%lf%lf%lf%lf",&x1,&y1,&x2,&y2) < 4)
