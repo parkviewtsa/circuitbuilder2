@@ -3,20 +3,36 @@ PLATFORM := linux-gnu
 
 CPP := clang -c
 LD := clang
-
 CPPFLAGS := -I .
-
 LDFLAGS := -L /usr/lib/$(ARCH)-$(PLATFORM) -lSDL2-2.0
 
-RENDER_OBJS := circuit-render-test.o circuit-render.o
+BUILD_DIR := out
 
-all: renderer
+RENDER_OBJS := \
+	$(BUILD_DIR)/circuit-render-test.o \
+	$(BUILD_DIR)/circuit-render.o
+
+APP_FILES := app/main.cpp
+
+all: build-dir renderer cb2
+
+scratch: clean all
+
+build-dir:
+	@mkdir -pv $(BUILD_DIR)
+
+cb2: $(APP_FILES)
+	@cd app; qmake
+	@make -C app
+	@mv app/app out/cb2
 
 renderer: $(RENDER_OBJS)
-	@echo "    LD     " $@
-	@$(LD) $(LDFLAGS) -o out/renderer $(RENDER_OBJS)
+	@echo
+	@echo "Linking executable: " $@
+	@$(LD) $(LDFLAGS) -o $(BUILD_DIR)/renderer $(RENDER_OBJS)
 
-%.o: %.cpp
+$(BUILD_DIR)/%.o: %.cpp
+	@echo
 	@echo "    CPP    " $<
 	@$(CPP) $(CPPFLAGS) -o $@ $<
 
@@ -25,4 +41,5 @@ renderer-gcc:
 	-L /usr/lib/x86_64-linux-gnu -lSDL2-2.0 -o out/renderer
 
 clean:
-	@rm -rvf out/* *.o ./*/*.o
+	@rm -rvf $(BUILD_DIR) app/Makefile
+	@echo; echo "Entire build directory removed."; echo
