@@ -41,5 +41,5 @@ renderer-gcc:
 	-L /usr/lib/x86_64-linux-gnu -lSDL2-2.0 -o out/renderer
 
 clean:
-	@rm -rvf $(BUILD_DIR) app/Makefile
+	@rm -rvf $(BUILD_DIR) app/Makefile app/*.o
 	@echo; echo "Entire build directory removed."; echo

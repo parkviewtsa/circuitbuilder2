@@ -1,8 +1,11 @@
 # Object files
 *.o
 
-# Gedit backups (please, please turn these off anyway)
+# Gedit backups (please, PLEASE turn these off anyway)
 *~
 
 # Executables
 out/*
+
+# QMake-generated Makefile
+app/Makefile
