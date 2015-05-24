@@ -1,4 +1,3 @@
-#define crShowWindow
 #include <circuit-render.h>
 /// Include the implementation specifically if not using the Code::Blocks project.
 //#include <circuit-render.cpp>
@@ -9,13 +8,10 @@ int main ()
 	// and create draw instances. The only thing we
 	// can't do until it is initialized is actually
 	// draw a frame.
-
-	// ".cbip" for "Circuit Builder Item Prototype"
 	crItem* example = crCreateItem("example-proto.cbip");
 	example->posx = 0;
 	example->posy = 0;
-	if (example) printf("crCreateItem succeeded.\n");
-	else printf("crCreateItem failed with error code [%lu].\n",crGetError());
+	// ".cbip" for "Circuit Builder Item Prototype"
 	if (crInit())
 	{
 		// true means something went wrong
@@ -34,7 +30,16 @@ int main ()
 	else
 	{
 		// false means no error
+		if (example) printf("crCreateItem succeeded.\n");
+		else printf("crCreateItem failed with error code [%lu].\n",crGetError());
 		while (!SDL_QuitRequested()) crDraw();
-		crQuit();
 	};
+	crDestroyItem(example);
+		// This would actually be done by crDropAll anyway, but it looks cleaner to destroy the item specifically.
+		// It is safe to call crDestroyItem with `NULL`, so even if creation of `example` failed, no problem.
+	crDropAll(); // This is the only function that clears the image prototypes.
+	crQuit();
+		// crQuit could be instead called before destroying items.
+		// crQuit is safe to call even if initialization failed.
+	return 0;
 };
