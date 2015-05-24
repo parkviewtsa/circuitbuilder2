@@ -2,7 +2,7 @@
 <CodeBlocks_project_file>
 	<FileVersion major="1" minor="6" />
 	<Project>
-		<Option title="circuitbuilder2" />
+		<Option title="cb2-renderer" />
 		<Option pch_mode="2" />
 		<Option compiler="gcc" />
 		<Build>
@@ -42,9 +42,9 @@
 		<Compiler>
 			<Add option="-Wzero-as-null-pointer-constant" />
 		</Compiler>
-		<Unit filename="../circuit-render-test.cpp" />
-		<Unit filename="../circuit-render.cpp" />
-		<Unit filename="../circuit-render.h" />
+		<Unit filename="../renderer/circuit-render-test.cpp" />
+		<Unit filename="../renderer/circuit-render.cpp" />
+		<Unit filename="../renderer/circuit-render.h" />
 		<Extensions>
 			<code_completion />
 			<envvars />
