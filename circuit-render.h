@@ -62,6 +62,6 @@ crIndex crGetError ();
 
 
 bool crInit (); // true: failure, false: success
-#define crDrawRound(n) (int)(n + 0.5)
 void crDraw ();
 void crQuit ();
+void crDropAll ();

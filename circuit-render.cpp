@@ -1,5 +1,4 @@
 #include <circuit-render.h>
-#define crShowWindow
 
 
 
@@ -110,8 +109,21 @@ crProto* crRequireProto (char* path) /// If NULL, something went wrong.
 		// That memory was really important to me.
 		crLastError = crError_FailedAlloc;
 		fclose(file); // Let it go. Else the file will be frozen until the app exits.
+		free(lines); // Avoid a memory leak.
 		return NULL;
 	};
+	size_t pathlen = strlen(path) + 1; // Include the NULL character.
+	item->loadedfrom = malloc(pathlen); // Keep an internal copy.
+	if (!item->loadedfrom)
+	{
+		// That memory was really important to me.
+		crLastError = crError_FailedAlloc;
+		fclose(file); // Let it go. Else the file will be frozen until the app exits.
+		free(lines); // Avoid a memory leak.
+		free(item); // Avoid a memory leak.
+		return NULL;
+	};
+	memcpy(item->loadedfrom,path,pathlen); // Copy string.
 	item->linecount = linecount;
 	item->lines = lines;
 	item->loadedfrom = path;
@@ -122,7 +134,9 @@ crProto* crRequireProto (char* path) /// If NULL, something went wrong.
 		{
 			crLastError = crError_BadProtoFile;
 			fclose(file); // Let it go. Else the file will be frozen until the app exits.
-			free(item); // Let's not have a memory leak on our hands.
+			free(lines); // Avoid a memory leak.
+			free(item); // Avoid a memory leak.
+			free(item->loadedfrom); // Avoid a memory leak.
 			return NULL;
 		};
 		lines->x1 = x1;
@@ -152,8 +166,10 @@ SDL_Renderer* crRenderer = NULL;
 crScalar crViewZoom = 0.1;
 crScalar crViewOffsetX = -0.1;
 crScalar crViewOffsetY = -0.8;
+bool crReady = false;
 bool crInit () // true: failure, false: success
 {
+	if (crReady) return false;
 	if (SDL_Init(SDL_INIT_VIDEO))
 	{
 		crLastError = crError_SDL_InitFailure;
@@ -180,10 +196,13 @@ bool crInit () // true: failure, false: success
 		SDL_Quit();
 		return true;
 	};
+	crReady = true;
 	return false;
 };
+#define crDrawRound(n) (int)(n + 0.5)
 void crDraw ()
 {
+	if (!crReady) if (crInit()) return; // Can't use SDL stuff unless it is initialized.
 	int winsizex,winsizey;
 	SDL_GetWindowSize(crWindow,&winsizex,&winsizey);
 	SDL_SetRenderDrawColor(crRenderer,0,0,0,0);
@@ -215,7 +234,24 @@ void crDraw ()
 };
 void crQuit ()
 {
-	SDL_DestroyRenderer(crRenderer);
-	SDL_DestroyWindow(crWindow);
-	SDL_Quit();
+	if (crReady)
+	{
+		SDL_DestroyRenderer(crRenderer);
+		SDL_DestroyWindow(crWindow);
+		SDL_Quit();
+		crReady = false;
+	};
+};
+void crDropAll ()
+{
+	while (crItemCount) crDestroyItem(*crItems); // Clear all of the items first.
+	for (crIndex i = 0; i < crProtoCount; i++)
+	{
+		crProto* proto = *(crProtos + i);
+		free(proto->lines);
+		free(proto->loadedfrom);
+		free(proto);
+	};
+	free(crProtos);
+	crProtoCount = 0;
 };
