@@ -8,5 +8,9 @@ INCLUDEPATH += .
 
 # Input
 SOURCES += main.cpp \
-    menus.cpp
+    menus.cpp \
+    content_area.cpp
 QT += widgets
+
+HEADERS += \
+    content_area.h

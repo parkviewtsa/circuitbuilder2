@@ -12,6 +12,8 @@ int main (int argc, char **argv)
   main_window.resize(800, 500);
   main_window.setWindowTitle("CircuitBuilder 2");
   setup_menus(&main_window, &app);
+
+  CB_ContentArea content_area = new CB_ContentArea();
   
   main_window.show();
   return app.exec();
