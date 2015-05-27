@@ -34,6 +34,9 @@
 				</Linker>
 			</Target>
 		</Build>
+		<Unit filename="circuit.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="circuit.h" />
 		<Extensions>
 			<code_completion />

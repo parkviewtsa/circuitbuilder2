@@ -45,13 +45,22 @@
 #define CB_OJUNCT   0x110
 #define CB_CJUNCT   0x111
 
+#define TABLE_CAP_BASE 20
+
 typedef struct {
     int type;
     char* symbol;
     cbComponent* from;
     cbComponent* to;
     float pos_X, pos_Y;
-    crItem* instance;
+    crItem* draw_instance;
 } cbComponent;
+
+typedef struct {
+    int comp_count;
+    int table_cap;
+    // more properties?
+    cbComponent* table;
+} cbHeader;
 
 #endif // CIRCUIT_H
