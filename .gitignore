@@ -9,3 +9,5 @@ out/*
 
 # QMake-generated Makefile
 app/Makefile
+*.sls
+build-app-Desktop_Qt_5_4_1_MinGW_32bit-Debug/

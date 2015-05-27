@@ -7,5 +7,6 @@ TARGET = app
 INCLUDEPATH += .
 
 # Input
-SOURCES += main.cpp
+SOURCES += main.cpp \
+    menus.cpp
 QT += widgets
