@@ -1,5 +1,5 @@
 #define crShowWindow
-#include <circuit-render.h>
+#include "circuit-render.h"
 
 
 
@@ -201,6 +201,9 @@ bool crInit () // true: failure, false: success
 	return false;
 };
 #define crDrawRound(n) (int)(n + 0.5)
+Uint8* crImgBuf = NULL;
+crIndex crImgW = 0;
+crIndex crImgH = 0;
 void crDraw ()
 {
 	if (!crReady) if (crInit()) return; // Can't use SDL stuff unless it is initialized.
@@ -232,6 +235,16 @@ void crDraw ()
 		};
 	};
 	SDL_RenderPresent(crRenderer);
+	if (crImgW != winsizex || crImgH != winsizey)
+	{
+		if (crImgW == winsizey && crImgH == winsizex) goto NOALLOC;
+		if (crImgBuf) free(crImgBuf);
+		crImgBuf = malloc(winsizex * winsizey * 3);
+		NOALLOC:
+		crImgW = winsizex;
+		crImgH = winsizey;
+	};
+	SDL_RenderReadPixels(crRenderer,NULL,SDL_PIXELFORMAT_RGB888,crImgBuf,winsizex * 3);
 };
 void crQuit ()
 {
@@ -241,6 +254,13 @@ void crQuit ()
 		SDL_DestroyWindow(crWindow);
 		SDL_Quit();
 		crReady = false;
+		if (crImgBuf)
+		{
+			free(crImgBuf);
+			crImgBuf = NULL;
+			crImgW = 0;
+			crImgH = 0;
+		};
 	};
 };
 void crDropAll ()
