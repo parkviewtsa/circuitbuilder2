@@ -216,11 +216,17 @@ crIndex crGetImgH ()
 {
 	return crImgH;
 };
-void crDraw ()
+void crDraw (unsigned int canvasw, unsigned int canvash)
 {
 	if (!crReady) if (crInit()) return; // Can't use SDL stuff unless it is initialized.
 	int winsizex,winsizey;
 	SDL_GetWindowSize(crWindow,&winsizex,&winsizey);
+	if (winsizex != canvasw || winsizey != canvash)
+	{
+		SDL_SetWindowSize(crWindow,canvasw,canvash);
+		SDL_GetWindowSize(crWindow,&winsizex,&winsizey);
+		// Get it after setting because it may not be what's expected.
+	};
 	SDL_SetRenderDrawColor(crRenderer,0,0,0,0);
 	SDL_RenderClear(crRenderer);
 	SDL_SetRenderDrawColor(crRenderer,255,255,255,255);
