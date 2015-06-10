@@ -68,4 +68,4 @@ void crDropAll ();
 crIndex crGetImgW ();
 crIndex crGetImgH ();
 void* crGetImgBuf ();
-#define crGetImg() QImage(crGetImgBuf,crGetImgW,crGetImgH,crImgW * 3,QImage::Format_RGB888)
+#define crGetImg() QImage(crGetImgBuf(),crGetImgW(),crGetImgH(),crGetImgW() * 3,QImage::Format_RGB888)
