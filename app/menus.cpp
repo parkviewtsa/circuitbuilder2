@@ -16,5 +16,5 @@ void setup_menus (QMainWindow* window, QApplication* app)
     file->addSeparator();
     file->addAction(quit);
     // TODO: fix this
-    //connect(quit, SIGNAL(triggered()), app, SLOT(quit()));
+    connect((SOCKET)quit, SIGNAL(triggered()), app, SLOT(quit()));
 }
