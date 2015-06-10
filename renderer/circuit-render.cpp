@@ -1,5 +1,5 @@
 #define crShowWindow
-#include <circuit-render.h>
+#include "circuit-render.h"
 
 
 
@@ -201,11 +201,32 @@ bool crInit () // true: failure, false: success
 	return false;
 };
 #define crDrawRound(n) (int)(n + 0.5)
-void crDraw ()
+void* crImgBuf = NULL;
+crIndex crImgW = 0;
+crIndex crImgH = 0;
+void* crGetImgBuf ()
+{
+	return crImgBuf;
+};
+crIndex crGetImgW ()
+{
+	return crImgW;
+};
+crIndex crGetImgH ()
+{
+	return crImgH;
+};
+void crDraw (unsigned int canvasw, unsigned int canvash)
 {
 	if (!crReady) if (crInit()) return; // Can't use SDL stuff unless it is initialized.
 	int winsizex,winsizey;
 	SDL_GetWindowSize(crWindow,&winsizex,&winsizey);
+	if (winsizex != canvasw || winsizey != canvash)
+	{
+		SDL_SetWindowSize(crWindow,canvasw,canvash);
+		SDL_GetWindowSize(crWindow,&winsizex,&winsizey);
+		// Get it after setting because it may not be what's expected.
+	};
 	SDL_SetRenderDrawColor(crRenderer,0,0,0,0);
 	SDL_RenderClear(crRenderer);
 	SDL_SetRenderDrawColor(crRenderer,255,255,255,255);
@@ -232,6 +253,16 @@ void crDraw ()
 		};
 	};
 	SDL_RenderPresent(crRenderer);
+	if (crImgW != winsizex || crImgH != winsizey)
+	{
+		if (crImgW == winsizey && crImgH == winsizex) goto NOALLOC;
+		if (crImgBuf) free(crImgBuf);
+		crImgBuf = malloc(winsizex * winsizey * 3);
+		NOALLOC:
+		crImgW = winsizex;
+		crImgH = winsizey;
+	};
+	SDL_RenderReadPixels(crRenderer,NULL,SDL_PIXELFORMAT_RGB888,crImgBuf,winsizex * 3);
 };
 void crQuit ()
 {
@@ -241,6 +272,13 @@ void crQuit ()
 		SDL_DestroyWindow(crWindow);
 		SDL_Quit();
 		crReady = false;
+		if (crImgBuf)
+		{
+			free(crImgBuf);
+			crImgBuf = NULL;
+			crImgW = 0;
+			crImgH = 0;
+		};
 	};
 };
 void crDropAll ()

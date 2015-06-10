@@ -1,6 +1,6 @@
-#include <circuit-render.h>
+#include "circuit-render.h"
 /// Include the implementation specifically if not using the Code::Blocks project.
-//#include <circuit-render.cpp>
+//#include "circuit-render.cpp"
 int main ()
 {
 	// Technically we do not have to initialize the
