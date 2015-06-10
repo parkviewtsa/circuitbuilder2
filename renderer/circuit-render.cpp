@@ -201,9 +201,21 @@ bool crInit () // true: failure, false: success
 	return false;
 };
 #define crDrawRound(n) (int)(n + 0.5)
-Uint8* crImgBuf = NULL;
+void* crImgBuf = NULL;
 crIndex crImgW = 0;
 crIndex crImgH = 0;
+void* crGetImgBuf ()
+{
+	return crImgBuf;
+};
+crIndex crGetImgW ()
+{
+	return crImgW;
+};
+crIndex crGetImgH ()
+{
+	return crImgH;
+};
 void crDraw ()
 {
 	if (!crReady) if (crInit()) return; // Can't use SDL stuff unless it is initialized.
