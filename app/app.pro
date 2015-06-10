@@ -10,9 +10,11 @@ INCLUDEPATH += .
 SOURCES += main.cpp \
     menus.cpp \
     content_area.cpp \
-    toolbar.cpp
+    toolbar.cpp \
+    canvas.cpp
 QT += widgets
 
 HEADERS += \
     content_area.h \
-    toolbar.h
+    toolbar.h \
+    canvas.h

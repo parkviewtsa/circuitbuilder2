@@ -65,5 +65,5 @@ bool crInit (); // true: failure, false: success
 void crDraw ();
 void crQuit ();
 void crDropAll ();
+void crResize (unsigned int, unsigned int);
 void* crGetImgBuf ();
-void* crGetFrame (unsigned int width, unsigned int height);

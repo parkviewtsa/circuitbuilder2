@@ -209,7 +209,15 @@ void* crGetImgBuf ()
 	return crImgBuf;
 };
 
-void crDraw (unsigned int canvasw, unsigned int canvash)
+unsigned int canvasw, canvash;
+
+void crResize (unsigned int w, unsigned int h)
+{
+	canvasw = w;
+	canvash = h;
+}
+
+void crDraw ()
 {
 	if (!crReady) if (crInit()) return; // Can't use SDL stuff unless it is initialized.
 	int winsizex,winsizey;
