@@ -208,14 +208,7 @@ void* crGetImgBuf ()
 {
 	return crImgBuf;
 };
-crIndex crGetImgW ()
-{
-	return crImgW;
-};
-crIndex crGetImgH ()
-{
-	return crImgH;
-};
+
 void crDraw (unsigned int canvasw, unsigned int canvash)
 {
 	if (!crReady) if (crInit()) return; // Can't use SDL stuff unless it is initialized.
@@ -264,6 +257,13 @@ void crDraw (unsigned int canvasw, unsigned int canvash)
 	};
 	SDL_RenderReadPixels(crRenderer,NULL,SDL_PIXELFORMAT_RGB888,crImgBuf,winsizex * 3);
 };
+
+void* crGetFrame (unsigned int width, unsigned int height)
+{
+	crDraw(width, height);
+	return crImgBuf;
+}
+
 void crQuit ()
 {
 	if (crReady)

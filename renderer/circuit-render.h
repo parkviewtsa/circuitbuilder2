@@ -65,7 +65,5 @@ bool crInit (); // true: failure, false: success
 void crDraw ();
 void crQuit ();
 void crDropAll ();
-crIndex crGetImgW ();
-crIndex crGetImgH ();
 void* crGetImgBuf ();
-#define crGetImg() QImage(crGetImgBuf(),crGetImgW(),crGetImgH(),crGetImgW() * 3,QImage::Format_RGB888)
+void* crGetFrame (unsigned int width, unsigned int height);
