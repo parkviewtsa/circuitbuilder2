@@ -2,9 +2,22 @@
 
 #include "canvas.h"
 #include "../renderer/circuit-render.h"
+#include "../error.h"
 
 CB_Canvas::CB_Canvas()
 {
+    try_init:
+    if (crInit()) { // true == error
+        if (QMessageBox(QMessageBox::Critical, tr("Fatal Error"),
+            tr("The application cannot load because SDL failed to initalize."),
+            QMessageBox::Abort | QMessageBox::Retry).exec() == QMessageBox::Retry)
+        {
+            goto try_init;
+        } else {
+            exit(CB_ERR_SDL);
+        }
+    }
+
     QSize s = size();
     unsigned int w = s.width();
     unsigned int h = s.height();
