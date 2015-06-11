@@ -58,7 +58,7 @@ void crDestroyItem (crItem* todel);
 #define crError_SDL_NoWindow 6
 #define crError_SDL_NoRenderer 7
 #define crError_BadArgs 8
-#define crError_ResizeFailed 9
+#define crError_ForcedResize 9
 crIndex crGetError ();
 
 
@@ -68,4 +68,5 @@ void crDraw ();
 void crQuit ();
 void crDropAll ();
 void crResize (crIndex, crIndex);
-void* crGetImgBuf ();
+void crGetImg (void**, crIndex*, crIndex*);
+void* crGetImg_ForceDims (crIndex, crIndex);

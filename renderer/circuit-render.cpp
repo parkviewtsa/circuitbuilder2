@@ -217,7 +217,7 @@ void crGetImg (void** buf, crIndex* w, crIndex* h)
 void* crResImgBuf = NULL;
 crIndex crResImgW = 0;
 crIndex crResImgH = 0;
-void* crGetImgWithDims (crIndex w_forced, crIndex h_forced)
+void* crGetImg_ForceDims (crIndex w_forced, crIndex h_forced)
 {
 	crResize(w_forced,h_forced);
 	crDraw();
@@ -237,6 +237,7 @@ void* crGetImgWithDims (crIndex w_forced, crIndex h_forced)
 		// will be executed in serial on the CPU) and
 		// completely unnecessary because the resize
 		// operation is only here for a very unlikely case.
+		crLastError = crError_ForcedResize; // I consider this an issue.
 		if (crResImgW != w_forced || crResImgH != h_forced)
 		{
 			if (crResImgBuf) free(crResImgBuf);
