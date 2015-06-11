@@ -208,6 +208,7 @@ void crGetImg (void** buf, crIndex* w, crIndex* h)
 {
 	if (buf && w && h)
 	{
+		crDraw();
 		*buf = crImgBuf;
 		*w = crImgW;
 		*h = crImgH;
