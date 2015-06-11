@@ -200,34 +200,92 @@ bool crInit () // true: failure, false: success
 	crReady = true;
 	return false;
 };
-#define crDrawRound(n) (int)(n + 0.5)
+#define crDrawRound(n) ((int)(n + 0.5f))
 void* crImgBuf = NULL;
 crIndex crImgW = 0;
 crIndex crImgH = 0;
-void* crGetImgBuf ()
+void crGetImg (void** buf, crIndex* w, crIndex* h)
 {
-	return crImgBuf;
+	if (buf && w && h)
+	{
+		*buf = crImgBuf;
+		*w = crImgW;
+		*h = crImgH;
+	}
+	else crLastError = crError_BadArgs;
 };
-
-unsigned int canvasw, canvash;
-
-void crResize (unsigned int w, unsigned int h)
+void* crResImgBuf = NULL;
+crIndex crResImgW = 0;
+crIndex crResImgH = 0;
+void* crGetImgWithDims (crIndex w_forced, crIndex h_forced)
 {
-	canvasw = w;
-	canvash = h;
-}
-
+	crResize(w_forced,h_forced);
+	crDraw();
+	if (!crImgBuf) return NULL;
+	/// In most cases, the below condition should be true,
+	/// and we won't need to use any kind of resizing procedures.
+	if (crImgW == w_forced && crImgH == h_forced) return crImgBuf;
+	else
+	{
+		/// Otherwise, here's a resize operation
+		/// with nearest-pixel sampling
+		/// so it's going to look rather ugly
+		/// and it's going to take a while too.
+		// If you feel like implementing interpolation,
+		// then I suppose you could, but it's going to be
+		// much, much slower (especially considering it
+		// will be executed in serial on the CPU) and
+		// completely unnecessary because the resize
+		// operation is only here for a very unlikely case.
+		if (crResImgW != w_forced || crResImgH != h_forced)
+		{
+			if (crResImgBuf) free(crResImgBuf);
+			crResImgBuf = malloc(w_forced * h_forced * 3);
+			if (!crResImgBuf)
+			{
+				w_forced = 0;
+				h_forced = 0;
+				crLastError = crError_FailedAlloc;
+				return NULL;
+			};
+			crResImgW = w_forced;
+			crResImgH = h_forced;
+		};
+		Uint8* resimgptr = crResImgBuf;
+		for (crIndex y = 0; y < h_forced; y++)
+		{
+			crIndex pix_y = (y / (float)h_forced) * crImgH;
+			if (pix_y >= crImgH) pix_y = crImgH - 1; // Avoid memory access violations.
+			for (crIndex x = 0; x < w_forced; x++)
+			{
+				crIndex pix_x = (x / (float)w_forced) * crImgW;
+				if (pix_x >= crImgW) pix_x = crImgW - 1; // Avoid memory access violations.
+				Uint8* color = crImgBuf + (((pix_y * crImgW) + pix_x) * 3);
+				*resimgptr = *color;
+				resimgptr++;
+				color++;
+				*resimgptr = *color;
+				resimgptr++;
+				color++;
+				*resimgptr = *color;
+				resimgptr++;
+				// Don't need to increment `color`.
+			};
+		};
+		return crResImgBuf;
+	};
+};
+void crResize (crIndex w, crIndex h)
+{
+	int winsizex,winsizey;
+	SDL_GetWindowSize(crWindow,&winsizex,&winsizey);
+	if (winsizex != w || winsizey != h) SDL_SetWindowSize(crWindow,w,h);
+};
 void crDraw ()
 {
 	if (!crReady) if (crInit()) return; // Can't use SDL stuff unless it is initialized.
 	int winsizex,winsizey;
 	SDL_GetWindowSize(crWindow,&winsizex,&winsizey);
-	if (winsizex != canvasw || winsizey != canvash)
-	{
-		SDL_SetWindowSize(crWindow,canvasw,canvash);
-		SDL_GetWindowSize(crWindow,&winsizex,&winsizey);
-		// Get it after setting because it may not be what's expected.
-	};
 	SDL_SetRenderDrawColor(crRenderer,0,0,0,0);
 	SDL_RenderClear(crRenderer);
 	SDL_SetRenderDrawColor(crRenderer,255,255,255,255);
@@ -259,19 +317,19 @@ void crDraw ()
 		if (crImgW == winsizey && crImgH == winsizex) goto NOALLOC;
 		if (crImgBuf) free(crImgBuf);
 		crImgBuf = malloc(winsizex * winsizey * 3);
+		if (!crImgBuf)
+		{
+			crLastError = crError_FailedAlloc;
+			winsizex = 0;
+			winsizey = 0;
+			return; // Do not attempt the pixel read operation!
+		};
 		NOALLOC:
 		crImgW = winsizex;
 		crImgH = winsizey;
 	};
 	SDL_RenderReadPixels(crRenderer,NULL,SDL_PIXELFORMAT_RGB888,crImgBuf,winsizex * 3);
 };
-
-void* crGetFrame (unsigned int width, unsigned int height)
-{
-	crDraw(width, height);
-	return crImgBuf;
-}
-
 void crQuit ()
 {
 	if (crReady)
@@ -286,6 +344,13 @@ void crQuit ()
 			crImgBuf = NULL;
 			crImgW = 0;
 			crImgH = 0;
+		};
+		if (crResImgBuf)
+		{
+			free(crResImgBuf);
+			crResImgBuf = NULL;
+			crResImgW = 0;
+			crResImgH = 0;
 		};
 	};
 };

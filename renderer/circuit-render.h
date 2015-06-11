@@ -57,13 +57,15 @@ void crDestroyItem (crItem* todel);
 #define crError_SDL_InitFailure 5
 #define crError_SDL_NoWindow 6
 #define crError_SDL_NoRenderer 7
+#define crError_BadArgs 8
+#define crError_ResizeFailed 9
 crIndex crGetError ();
 
 
 
 bool crInit (); // true: failure, false: success
-void crDraw (unsigned int, unsigned int);
+void crDraw ();
 void crQuit ();
 void crDropAll ();
-void crResize (unsigned int, unsigned int);
+void crResize (crIndex, crIndex);
 void* crGetImgBuf ();
