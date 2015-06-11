@@ -1,7 +1,11 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#define SDL_main main
+#include <SDL2/SDL.h>
+
 #define crShowWindow
 #include "circuit-render.h"
-
-
 
 crIndex crLastError = 0;
 crIndex crGetError ()

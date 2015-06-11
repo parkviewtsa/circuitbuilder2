@@ -14,7 +14,7 @@ CB_Canvas::CB_Canvas()
         {
             goto try_init;
         } else {
-            exit(CB_ERR_SDL);
+            qApp.exit(CB_ERR_SDL);
         }
     }
 

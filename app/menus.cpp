@@ -1,6 +1,6 @@
 #include <QtWidgets>
 
-void setup_menus (QMainWindow* window, QApplication* app)
+void setup_menus (QMainWindow* window)
 {
     // File menu
     QAction *new_file = new QAction("&New", window);
@@ -16,5 +16,5 @@ void setup_menus (QMainWindow* window, QApplication* app)
     file->addSeparator();
     file->addAction(quit);
     // TODO: fix this
-    connect((SOCKET)quit, SIGNAL(triggered()), app, SLOT(quit()));
+    QObject::connect(quit, SIGNAL(triggered()), qApp, SLOT(quit()));
 }
