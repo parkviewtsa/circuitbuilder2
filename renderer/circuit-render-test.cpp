@@ -32,7 +32,7 @@ int main ()
 		// false means no error
 		if (example) printf("crCreateItem succeeded.\n");
 		else printf("crCreateItem failed with error code [%lu].\n",crGetError());
-		while (!SDL_QuitRequested()) crDraw();
+		while (!SDL_QuitRequested()) crDraw(1280,720);
 	};
 	crDestroyItem(example);
 		// This would actually be done by crDropAll anyway, but it looks cleaner to destroy the item specifically.

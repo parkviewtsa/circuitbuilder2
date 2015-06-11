@@ -62,7 +62,7 @@ crIndex crGetError ();
 
 
 bool crInit (); // true: failure, false: success
-void crDraw ();
+void crDraw (unsigned int, unsigned int);
 void crQuit ();
 void crDropAll ();
 void crResize (unsigned int, unsigned int);
