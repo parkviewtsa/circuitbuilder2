@@ -7,24 +7,20 @@
 CB_Canvas::CB_Canvas()
 {
     try_init:
-    if (crInit()) { // true == error
-        if (QMessageBox(QMessageBox::Critical, tr("Fatal Error"),
-            tr("The application cannot load because SDL failed to initalize."),
-            QMessageBox::Abort | QMessageBox::Retry).exec() == QMessageBox::Retry)
-        {
-            goto try_init;
-        } else {
-            qApp.exit(CB_ERR_SDL);
-        }
-    }
+    if (crInit()) while (crash(CB_ERR_SDL_INIT, FATAL)) goto try_init;
 
     QSize s = size();
-    unsigned int w = s.width();
-    unsigned int h = s.height();
+    crIndex w = s.width();
+    crIndex h = s.height();
+    delete &s;
 
+    void* img_buf = 0;
     crResize(w, h);
     crDraw();
-    image = QImage(crGetImgBuf(), w, h, w*3, QImage::Format_RGB888);
+    crGetImg(&img_buf, &actual_width, &actual_height);
+    if (img_buf)
+        image = QImage((uchar*)img_buf, (int)w, (int)h, (int)w*3, QImage::Format_RGB888);
+    else
 }
 
 QSize CB_Canvas::minimumSizeHint ()
@@ -35,12 +31,16 @@ QSize CB_Canvas::minimumSizeHint ()
 void CB_Canvas::resizeEvent (void)
 {
     QSize s = size();
-    unsigned int w = s.width();
-    unsigned int h = s.height();
+    crIndex w = s.width();
+    crIndex h = s.height();
+    delete &s;
 
+    void* img_buf = 0;
     crResize(w, h);
     crDraw();
-    image = QImage(crGetImgBuf(), w, h, w*3, QImage::Format_RGB888);
+    crGetImg(&img_buf, &w, &h);
+    if (img_buf)
+        image = QImage((uchar*)img_buf, (int)w, (int)h, (int)w*3, QImage::Format_RGB888);
 }
 
 void CB_Canvas::paintEvent (void)

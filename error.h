@@ -2,14 +2,40 @@
  * CircuitBuilder's universal error code file.
  * Define all possible exit statuses (stati?) here.
  */
- 
+
 #ifndef ERROR_H
 #define ERROR_H
 
-#define CB_SUCCESS		0
-#define CB_ERR_SDL		1	// Something wrong with SDL, specifically init.
-#define CB_ERR_QT		2	// Something wrong with Qt, specifically init.
+#define NOT_FATAL	0
+#define FATAL		1
 
-#define CB_ERR_WTF		-1	// For when you just don't know what happened.	
+#define CB_SUCCESS		0
+#define CB_ERR_SDL_INIT	1	// Something wrong with SDL, specifically init.
+#define CB_ERR_QT_INIT	2	// Something wrong with Qt, specifically init.
+#define CB_ERR_SDL		3	// Something else wrong with SDL.
+#define CB_ERR_QT		4	// Something else wrong with Qt.
+#define CB_ERR_NO_FRAME	5	// The renderer failed to render a frame.
+
+#define CB_ERR_WTF		-1	// For when you just don't know what happened.
+
+char* get_error_string (int code)
+{ switch (code) {
+	case CB_SUCCESS: return "";
+	case CB_ERR_SDL_INIT:
+		return "The application cannot load because SDL failed to initialize.";
+	case CB_ERR_QT_INIT:
+		return "The application cannot load because Qt failed to initialize.";
+	case CB_ERR_SDL:
+		return "SDL encountered a fatal error.";
+	case CB_ERR_QT:
+		return "Qt encountered a fatal error.";
+	case CB_ERR_NO_FRAME:
+		return "The renderer failed to render the circuit diagram.";
+	
+	case CB_ERR_WTF:
+		return "Unknown error";
+	default:
+		return "Unknown error";
+}}
 
 #endif
