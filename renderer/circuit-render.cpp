@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#define SDL_main main
 #include <SDL2/SDL.h>
 
 #define crShowWindow
@@ -30,6 +29,7 @@ crItem* crCreateItem (char* path) // Returns NULL if something went wrong.
 		return NULL;
 	};
 	out->proto = proto;
+	out->color = {255,255,255,255}; // Default: Solid White
 	crItems = (crItem**)realloc(crItems,sizeof(void*) * (crItemCount + 1));
 	if (!crItems)
 	{
@@ -294,10 +294,10 @@ void crDraw ()
 	SDL_GetWindowSize(crWindow,&winsizex,&winsizey);
 	SDL_SetRenderDrawColor(crRenderer,0,0,0,0);
 	SDL_RenderClear(crRenderer);
-	SDL_SetRenderDrawColor(crRenderer,255,255,255,255);
 	for (crIndex i = 0; i < crItemCount; i++)
 	{
 		crItem* item = *(crItems + i);
+		SDL_SetRenderDrawColor(crRenderer,item->color.r,item->color.g,item->color.b,item->color.a);
 		for (crIndex j = 0; j < item->proto->linecount; j++)
 		{
 			crLine line = *(item->proto->lines + j);

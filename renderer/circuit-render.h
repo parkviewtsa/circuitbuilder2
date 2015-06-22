@@ -1,4 +1,5 @@
 #pragma once
+#define SDL_main main
 
 #ifdef crUseDoubles
 typedef double crScalar;
@@ -34,6 +35,7 @@ struct crItem
 {
 	crProto* proto;
 	crScalar posx,posy;
+	SDL_Color color;
 };
 /// The reason crItems is not a single-block list is
 /// so that expanding the list of items does not break
