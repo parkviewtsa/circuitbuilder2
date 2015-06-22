@@ -8,8 +8,8 @@ CB_Canvas::CB_Canvas()
 {
     try_init:
     // crInit returns 1 if something went wrong; crash returns 1 if the user
-    // chose to retry
-    if (crInit()) while (crash(CB_ERR_SDL_INIT, FATAL)) goto try_init;
+    // chose to retry and exits otherwise
+    if (crInit()) if (crash(CB_ERR_SDL_INIT, FATAL)) goto try_init;
 
     QSize s = size();
     crIndex w = s.width();
