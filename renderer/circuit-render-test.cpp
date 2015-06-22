@@ -1,3 +1,7 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <SDL2/SDL.h>
 #include "circuit-render.h"
 /// Include the implementation specifically if not using the Code::Blocks project.
 //#include "circuit-render.cpp"
