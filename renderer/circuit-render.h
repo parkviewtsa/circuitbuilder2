@@ -35,6 +35,7 @@ struct crItem
 {
 	crProto* proto;
 	crScalar posx,posy;
+	crScalar scale;
 	SDL_Color color;
 };
 /// The reason crItems is not a single-block list is

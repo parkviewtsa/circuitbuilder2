@@ -31,6 +31,7 @@ crItem* crCreateItem (char* path) // Returns NULL if something went wrong.
 	};
 	out->proto = proto;
 	out->color = {255,255,255,255}; // Default: Solid White
+	out->scale = 1;
 	crItems = (crItem**)realloc(crItems,sizeof(void*) * (crItemCount + 1));
 	if (!crItems)
 	{
@@ -320,6 +321,10 @@ void crDraw ()
 		for (crIndex j = 0; j < item->proto->linecount; j++)
 		{
 			crLine line = *(item->proto->lines + j);
+			line.x1 *= item->scale;
+			line.y1 *= item->scale;
+			line.x2 *= item->scale;
+			line.y2 *= item->scale;
 			line.x1 += item->posx;
 			line.y1 += item->posy;
 			line.x2 += item->posx;
