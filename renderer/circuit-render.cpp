@@ -5,6 +5,7 @@
 
 #define crShowWindow
 #include "circuit-render.h"
+#include "error.h"
 
 crIndex crLastError = 0;
 crIndex crGetError ()
@@ -35,7 +36,7 @@ crItem* crCreateItem (char* path) // Returns NULL if something went wrong.
 	{
 		// You done screwed it up, now. *cough* thanks a lot windows *cough*
 		printf("Fatal allocation failure: crItems main list block realloc, during grow\n");
-		exit(-1);
+		exit(CB_ERR_CR_GROW_ALLOC_FAIL);
 	};
 	*(crItems + crItemCount) = out;
 	crItemCount++;
