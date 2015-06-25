@@ -65,3 +65,7 @@ void crDropAll ();
 void crResize (crIndex, crIndex);
 void crGetImg (void**, crIndex*, crIndex*);
 void* crGetImg_ForceDims (crIndex, crIndex);
+void crGetViewPos (crScalar* x, crScalar* y);
+void crSetViewPos (crScalar x, crScalar y);
+crScalar crGetViewWidth ();
+void crSetViewWidth (crScalar w);

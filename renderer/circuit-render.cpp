@@ -168,9 +168,27 @@ crProto* crRequireProto (char* path) /// If NULL, something went wrong.
 
 SDL_Window* crWindow = NULL;
 SDL_Renderer* crRenderer = NULL;
-crScalar crViewZoom = 0.1;
-crScalar crViewOffsetX = -0.1;
-crScalar crViewOffsetY = -0.8;
+crScalar crViewW = 10;
+crScalar crViewX = -0.1;
+crScalar crViewY = -0.8;
+void crGetViewPos (crScalar* x, crScalar* y)
+{
+	if (x) *x = crViewX;
+	if (y) *y = crViewY;
+};
+void crSetViewPos (crScalar x, crScalar y)
+{
+	crViewX = x;
+	crViewY = y;
+};
+crScalar crGetViewWidth ()
+{
+	return crViewW;
+};
+void crSetViewWidth (crScalar w)
+{
+	crViewW = w;
+};
 bool crReady = false;
 bool crInit () // true: failure, false: success
 {
@@ -301,16 +319,29 @@ void crDraw ()
 		for (crIndex j = 0; j < item->proto->linecount; j++)
 		{
 			crLine line = *(item->proto->lines + j);
-			line.x1 += item->posx - crViewOffsetX;
-			line.y1 += item->posy - crViewOffsetY;
-			line.x2 += item->posx - crViewOffsetX;
-			line.y2 += item->posy - crViewOffsetY;
+			line.x1 += item->posx;
+			line.y1 += item->posy;
+			line.x2 += item->posx;
+			line.y2 += item->posy;
+			line.x1 -= crViewX;
+			line.y1 -= crViewY;
+			line.x2 -= crViewX;
+			line.y2 -= crViewY;
+			crScalar viewh = crViewW / (winsizex / (crScalar)winsizey);
+			line.x1 /= crViewW;
+			line.y1 /= viewh;
+			line.x2 /= crViewW;
+			line.y2 /= viewh;
+			line.x1 += 0.5;
+			line.y1 += 0.5;
+			line.x2 += 0.5;
+			line.y2 += 0.5;
 			SDL_RenderDrawLine(
 				crRenderer,
-				crDrawRound((line.x1 * crViewZoom) * winsizex),
-				crDrawRound((line.y1 * crViewZoom) * winsizex),
-				crDrawRound((line.x2 * crViewZoom) * winsizex),
-				crDrawRound((line.y2 * crViewZoom) * winsizex)
+				crDrawRound(line.x1 * winsizex),
+				crDrawRound(line.y1 * winsizey),
+				crDrawRound(line.x2 * winsizex),
+				crDrawRound(line.y2 * winsizey)
 			);
 			// Render coords are not normalized.
 			// This is using winsizex only, because using
@@ -372,4 +403,11 @@ void crDropAll ()
 	};
 	free(crProtos);
 	crProtoCount = 0;
+};
+
+
+
+crItem* crGetClickedItem (crScalar x, crScalar y)
+{
+
 };
