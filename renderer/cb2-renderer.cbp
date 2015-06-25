@@ -42,6 +42,7 @@
 		<Compiler>
 			<Add option="-Wzero-as-null-pointer-constant" />
 		</Compiler>
+		<Unit filename="../error.h" />
 		<Unit filename="circuit-render-test.cpp" />
 		<Unit filename="circuit-render.cpp" />
 		<Unit filename="circuit-render.h" />

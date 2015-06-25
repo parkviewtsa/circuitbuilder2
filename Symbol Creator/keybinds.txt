@@ -1,0 +1,7 @@
+6
+10 Pause Menu 27 0
+15 Modify Endpoint 0 1
+8 New Line 32 0
+11 Delete Line 0 3
+4 Save 13 0
+4 Crop 99 0

@@ -15,6 +15,7 @@ int main ()
 	crItem* example = crCreateItem("example-proto.cbip");
 	example->posx = -0.5;
 	example->posy = -0.5;
+	crSetViewWidth(2);
 	// ".cbip" for "Circuit Builder Item Prototype"
 	if (crInit())
 	{

@@ -70,6 +70,86 @@ void CreateLine ()
 	out->endpoint2->y = 0.475;
 	slAddItemToList(&Lines,&LineCount,out);
 };
+void CropLines ()
+{
+	// Start values at most likely to be overwritten.
+	slScalar leftmost = 1;
+	slScalar rightmost = -1;
+	slScalar topmost = 1;
+	slScalar bottommost = -1;
+	// Vars used by both loops are defined here.
+	slBU cur;
+	Line* line;
+	slScalar x1,y1,x2,y2;
+	// Buffer this so we don't have to calculate them twice.
+	slScalar* coords = malloc(sizeof(slScalar) * (LineCount * 4));
+	slScalar* coords_sub = coords; // Increment this to avoid unnecessary pointer math.
+	for (cur = 0; cur < LineCount; cur++)
+	{
+		line = *(Lines + cur);
+		// Multiply by 2 and subtact 1 to go from [0,1] space to [-1,1] space.
+		x1 = ((line->endpoint1->x + (line->endpoint1->w / 2)) * 2) - 1;
+		y1 = ((line->endpoint1->y + (line->endpoint1->h / 2)) * 2) - 1;
+		x2 = ((line->endpoint2->x + (line->endpoint2->w / 2)) * 2) - 1;
+		y2 = ((line->endpoint2->y + (line->endpoint2->h / 2)) * 2) - 1;
+		// Save to buffer.
+		*coords_sub = x1;
+		coords_sub++;
+		*coords_sub = y1;
+		coords_sub++;
+		*coords_sub = x2;
+		coords_sub++;
+		*coords_sub = y2;
+		coords_sub++;
+		if (x1 < leftmost) leftmost = x1;
+		if (x1 > rightmost) rightmost = x1;
+		if (x2 < leftmost) leftmost = x2;
+		if (x2 > rightmost) rightmost = x2;
+		if (y1 < topmost) topmost = y1;
+		if (y1 > bottommost) bottommost = y1;
+		if (y2 < topmost) topmost = y2;
+		if (y2 > bottommost) bottommost = y2;
+	};
+	slScalar width = rightmost - leftmost;
+	slScalar height = bottommost - topmost;
+	slScalar xmid = (rightmost + leftmost) / 2;
+	slScalar ymid = (bottommost + topmost) / 2;
+	// Don't warp the image - maintain aspect ratio.
+	// We are using width as the scaling value.
+	if (width < height) width = height; // Use height if height is larger.
+	width /= 2; // Entire space is -1 to 1, which is 2.
+	coords_sub = coords; // Reset to first value.
+	for (cur = 0; cur < LineCount; cur++)
+	{
+		line = *(Lines + cur);
+		// Read coords back from buffer
+		x1 = *coords_sub;
+		coords_sub++;
+		y1 = *coords_sub;
+		coords_sub++;
+		x2 = *coords_sub;
+		coords_sub++;
+		y2 = *coords_sub;
+		coords_sub++;
+		// transform to crop
+		x1 -= xmid;
+		x2 -= xmid;
+		y1 -= ymid;
+		y2 -= ymid;
+		x1 /= width;
+		x2 /= width;
+		y1 /= width;
+		y2 /= width;
+		// set values back into the boxes: inverse of getting values
+		line->endpoint1->x = ((x1 + 1) / 2) - (line->endpoint1->w / 2);
+		line->endpoint1->y = ((y1 + 1) / 2) - (line->endpoint1->h / 2);
+		line->endpoint2->x = ((x2 + 1) / 2) - (line->endpoint1->w / 2);
+		line->endpoint2->y = ((y2 + 1) / 2) - (line->endpoint1->h / 2);
+	};
+	// don't forget to free the buffer - avoid memory leak.
+	free(coords);
+	// don't free coords_sub, because it is coords
+};
 void SaveLines ()
 {
 	FILE* file = fopen("new-symbol.cbip","r");
@@ -99,11 +179,18 @@ void SaveLines ()
 int main ()
 {
 	printf("Instructions...\n\n");
-	printf("Spawn New Line: PRESS SPACE\nModify Point: HOLD LEFT MOUSE\nDelete Line: PRESS RIGHT MOUSE\nSave Symbol: ENTER\n\n");
+	printf(
+		"Spawn New Line: PRESS SPACE\n\
+		Modify Point: HOLD LEFT MOUSE\n\
+		Delete Line: PRESS RIGHT MOUSE\n\
+		Save Symbol: ENTER\n\
+		Crop Image: C\n\
+		\n"
+	);
 	printf("Press enter to continue.\n");
 	getchar();
 	slInit();
-	opInit();
+	SDL_SetWindowSize(slWindow,640,640); // 1:1 ratio important!
 	slCustomDrawStage_Middle = DrawLines;
 	slKeyBind* click = slGetKeyBind("Modify Endpoint",0,1);
 	click->onpress = GrabLine;
@@ -111,6 +198,7 @@ int main ()
 	slGetKeyBind("New Line",SDLK_SPACE,0)->onpress = CreateLine;
 	slGetKeyBind("Delete Line",0,3)->onpress = DeleteLine;
 	slGetKeyBind("Save",SDLK_RETURN,0)->onpress = SaveLines;
+	slGetKeyBind("Crop",SDLK_c,0)->onpress = CropLines;
 	while (!slExitReq)
 	{
 		slCycle();
@@ -120,6 +208,5 @@ int main ()
 			grabbed->y = slMouseY - (grabbed->h / 2);
 		};
 	};
-	opQuit();
 	slQuit();
 };
