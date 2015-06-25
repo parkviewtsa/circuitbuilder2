@@ -169,8 +169,8 @@ crProto* crRequireProto (char* path) /// If NULL, something went wrong.
 SDL_Window* crWindow = NULL;
 SDL_Renderer* crRenderer = NULL;
 crScalar crViewW = 10;
-crScalar crViewX = -0.1;
-crScalar crViewY = -0.8;
+crScalar crViewX = 0;
+crScalar crViewY = 0;
 void crGetViewPos (crScalar* x, crScalar* y)
 {
 	if (x) *x = crViewX;
@@ -409,5 +409,34 @@ void crDropAll ()
 
 crItem* crGetClickedItem (crScalar x, crScalar y)
 {
-
+	// Give this function coordinates in range ([0,1],[0,1]).
+	x -= 0.5;
+	x *= crViewW;
+	x += crViewX;
+	y -= 0.5;
+	int winsizex,winsizey;
+	SDL_GetWindowSize(crWindow,&winsizex,&winsizey);
+	crScalar viewh = crViewW / (winsizex / (crScalar)winsizey);
+	y *= viewh;
+	y += crViewY;
+	crItem* out = NULL;
+	crScalar closest;
+	for (crIndex cur = 0; cur < crItemCount; cur++)
+	{
+		crItem* item = *(crItems + cur);
+		crScalar x_sq = item->posx - x;
+		x_sq *= x_sq;
+		crScalar y_sq = item->posy - y;
+		y_sq *= y_sq;
+		x_sq += y_sq; // Reuse of this variable.
+		if (x_sq <= 1)
+		{
+			// The radius of the circle is 1. 1 squared is 1.
+			if (out) if (x_sq > closest) continue; // Not as close as another. Skip!
+			// Otherwise, we have a winner here.
+			out = item;
+			closest = x_sq;
+		};
+	};
+	return out; // Return NULL if nothing at least nearby.
 };
