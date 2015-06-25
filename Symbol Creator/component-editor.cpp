@@ -190,7 +190,6 @@ int main ()
 	printf("Press enter to continue.\n");
 	getchar();
 	slInit();
-	SDL_SetWindowSize(slWindow,640,640); // 1:1 ratio important!
 	slCustomDrawStage_Middle = DrawLines;
 	slKeyBind* click = slGetKeyBind("Modify Endpoint",0,1);
 	click->onpress = GrabLine;
@@ -202,6 +201,15 @@ int main ()
 	while (!slExitReq)
 	{
 		slCycle();
+		// We need the window to have a 1:1 ratio of width to height,
+		// because otherwise symbols may appear warped.
+		int winw,winh;
+		SDL_GetWindowSize(slWindow,&winw,&winh);
+		if (winw != winh)
+		{
+			if (winw > winh) winw = winh;
+			SDL_SetWindowSize(slWindow,winw,winw);
+		};
 		if (grabbed)
 		{
 			grabbed->x = slMouseX - (grabbed->w / 2);
