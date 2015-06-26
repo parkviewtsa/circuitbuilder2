@@ -5,6 +5,7 @@
 
 #define crShowWindow
 #include "circuit-render.h"
+#include "error.h"
 
 crIndex crLastError = 0;
 crIndex crGetError ()
@@ -30,12 +31,13 @@ crItem* crCreateItem (char* path) // Returns NULL if something went wrong.
 	};
 	out->proto = proto;
 	out->color = {255,255,255,255}; // Default: Solid White
+	out->scale = 1;
 	crItems = (crItem**)realloc(crItems,sizeof(void*) * (crItemCount + 1));
 	if (!crItems)
 	{
 		// You done screwed it up, now. *cough* thanks a lot windows *cough*
 		printf("Fatal allocation failure: crItems main list block realloc, during grow\n");
-		exit(-1);
+		exit(CB_ERR_CR_GROW_ALLOC_FAIL);
 	};
 	*(crItems + crItemCount) = out;
 	crItemCount++;
@@ -168,9 +170,27 @@ crProto* crRequireProto (char* path) /// If NULL, something went wrong.
 
 SDL_Window* crWindow = NULL;
 SDL_Renderer* crRenderer = NULL;
-crScalar crViewZoom = 0.1;
-crScalar crViewOffsetX = -0.1;
-crScalar crViewOffsetY = -0.8;
+crScalar crViewW = 10;
+crScalar crViewX = 0;
+crScalar crViewY = 0;
+void crGetViewPos (crScalar* x, crScalar* y)
+{
+	if (x) *x = crViewX;
+	if (y) *y = crViewY;
+};
+void crSetViewPos (crScalar x, crScalar y)
+{
+	crViewX = x;
+	crViewY = y;
+};
+crScalar crGetViewWidth ()
+{
+	return crViewW;
+};
+void crSetViewWidth (crScalar w)
+{
+	crViewW = w;
+};
 bool crReady = false;
 bool crInit () // true: failure, false: success
 {
@@ -301,16 +321,33 @@ void crDraw ()
 		for (crIndex j = 0; j < item->proto->linecount; j++)
 		{
 			crLine line = *(item->proto->lines + j);
-			line.x1 += item->posx - crViewOffsetX;
-			line.y1 += item->posy - crViewOffsetY;
-			line.x2 += item->posx - crViewOffsetX;
-			line.y2 += item->posy - crViewOffsetY;
+			line.x1 *= item->scale;
+			line.y1 *= item->scale;
+			line.x2 *= item->scale;
+			line.y2 *= item->scale;
+			line.x1 += item->posx;
+			line.y1 += item->posy;
+			line.x2 += item->posx;
+			line.y2 += item->posy;
+			line.x1 -= crViewX;
+			line.y1 -= crViewY;
+			line.x2 -= crViewX;
+			line.y2 -= crViewY;
+			crScalar viewh = crViewW / (winsizex / (crScalar)winsizey);
+			line.x1 /= crViewW;
+			line.y1 /= viewh;
+			line.x2 /= crViewW;
+			line.y2 /= viewh;
+			line.x1 += 0.5;
+			line.y1 += 0.5;
+			line.x2 += 0.5;
+			line.y2 += 0.5;
 			SDL_RenderDrawLine(
 				crRenderer,
-				crDrawRound((line.x1 * crViewZoom) * winsizex),
-				crDrawRound((line.y1 * crViewZoom) * winsizex),
-				crDrawRound((line.x2 * crViewZoom) * winsizex),
-				crDrawRound((line.y2 * crViewZoom) * winsizex)
+				crDrawRound(line.x1 * winsizex),
+				crDrawRound(line.y1 * winsizey),
+				crDrawRound(line.x2 * winsizex),
+				crDrawRound(line.y2 * winsizey)
 			);
 			// Render coords are not normalized.
 			// This is using winsizex only, because using
@@ -372,4 +409,40 @@ void crDropAll ()
 	};
 	free(crProtos);
 	crProtoCount = 0;
+};
+
+
+
+crItem* crGetClickedItem (crScalar x, crScalar y)
+{
+	// Give this function coordinates in range ([0,1],[0,1]).
+	x -= 0.5;
+	x *= crViewW;
+	x += crViewX;
+	y -= 0.5;
+	int winsizex,winsizey;
+	SDL_GetWindowSize(crWindow,&winsizex,&winsizey);
+	crScalar viewh = crViewW / (winsizex / (crScalar)winsizey);
+	y *= viewh;
+	y += crViewY;
+	crItem* out = NULL;
+	crScalar closest;
+	for (crIndex cur = 0; cur < crItemCount; cur++)
+	{
+		crItem* item = *(crItems + cur);
+		crScalar x_sq = item->posx - x;
+		x_sq *= x_sq;
+		crScalar y_sq = item->posy - y;
+		y_sq *= y_sq;
+		x_sq += y_sq; // Reuse of this variable.
+		if (x_sq <= 1)
+		{
+			// The radius of the circle is 1. 1 squared is 1.
+			if (out) if (x_sq > closest) continue; // Not as close as another. Skip!
+			// Otherwise, we have a winner here.
+			out = item;
+			closest = x_sq;
+		};
+	};
+	return out; // Return NULL if nothing at least nearby.
 };

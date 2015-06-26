@@ -13,8 +13,9 @@ int main ()
 	// can't do until it is initialized is actually
 	// draw a frame.
 	crItem* example = crCreateItem("example-proto.cbip");
-	example->posx = 0;
-	example->posy = 0;
+	example->posx = -0.5;
+	example->posy = -0.5;
+	crSetViewWidth(2);
 	// ".cbip" for "Circuit Builder Item Prototype"
 	if (crInit())
 	{

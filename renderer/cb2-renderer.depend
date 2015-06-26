@@ -16,12 +16,20 @@
 1432500150 source:c:\collaboratives\circuitbuilder2\circuit-render.cpp
 	<circuit-render.h>
 
-1433915105 source:c:\collaboratives\circuitbuilder2\renderer\circuit-render-test.cpp
-	"circuit-render.h"
-
-1433915181 c:\collaboratives\circuitbuilder2\renderer\circuit-render.h
+1435244462 source:c:\collaboratives\circuitbuilder2\renderer\circuit-render-test.cpp
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
 	<SDL2/SDL.h>
+	"circuit-render.h"
+
+1435203583 c:\collaboratives\circuitbuilder2\renderer\circuit-render.h
+
+1435206711 source:c:\collaboratives\circuitbuilder2\renderer\circuit-render.cpp
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<SDL2/SDL.h>
+	"circuit-render.h"
+	"error.h"
 
