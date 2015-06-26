@@ -12,6 +12,7 @@ public:
 private:
     QPainter painter;
     QImage image;
+    cbHeader* circuit_header;
 };
 
 #endif // CB_CANVAS_H

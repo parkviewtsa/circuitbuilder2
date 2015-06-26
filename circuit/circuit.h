@@ -1,6 +1,10 @@
 #ifndef CIRCUIT_H
 #define CIRCUIT_H
 
+// A few shortcuts that I'll never use
+#define false 0
+#define true 1
+
 // Component IDs (tags)
 #define CB_BATT     0x03
 #define CB_CELL     0x06
@@ -46,21 +50,32 @@
 #define CB_CJUNCT   0x111
 
 #define TABLE_CAP_BASE 20
+#define TABLE_EXP_SIZE 10
+
+#define SYMBOL_DIR "symbols/"
 
 typedef struct {
-    int type;
-    char* symbol;
-    cbComponent* from;
-    cbComponent* to;
-    float pos_X, pos_Y;
-    crItem* draw_instance;
+  int type;
+  cbComponent* from;
+  cbComponent* to;
+  crItem* draw_item;
 } cbComponent;
 
 typedef struct {
-    int comp_count;
-    int table_cap;
-    // more properties?
-    cbComponent* table;
+  int comp_count;
+  int table_cap;
+  // more properties?
+  cbComponent* table;
 } cbHeader;
+
+void circuit_init (cbHeader*, char*);
+cbComponent* cb_CreateComponent (int);
+void cb_AddComponent (cbComponent*, cbHeader*);
+void cb_DeleteComponent (cbComponent*, cbHeader*);
+void cb_FindComponent (cbComponent*, const cbHeader*);
+void cb_ConnectComponents (cbComponent*, cbComponent*);
+cbComponent* cb_GetComponentByDrawItem (crItem*, const cbHeader*);
+
+extern int crash (int, int);
 
 #endif // CIRCUIT_H

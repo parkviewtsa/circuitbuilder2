@@ -3,11 +3,14 @@
 #include "canvas.h"
 #include "../renderer/circuit-render.h"
 #include "../error.h"
+#include "../circuit/circuit.h"
 
-CB_Canvas::CB_Canvas()
+CB_Canvas::CB_Canvas (char* filename = "")
 {
-    // crInit returns 1 if something went wrong; crash returns 1 if the user
-    // chose to retry and exits otherwise
+    circuit_init(circuit_header, filename);
+
+    // crInit returns 1 if something went wrong; crash returns 1
+    // if the user chose to retry and exits otherwise
     while (crInit()) crash(CB_ERR_SDL_INIT, FATAL);
 
     QSize s = size();
