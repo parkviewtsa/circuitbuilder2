@@ -8,6 +8,7 @@ void setup_menus (QMainWindow*); // En lieu of a header file
 
 int main (int argc, char **argv)
 {
+  crInit();
   QApplication app (argc, argv);
 
   QMainWindow main_window;
@@ -17,9 +18,10 @@ int main (int argc, char **argv)
 
   CB_ContentArea content_area;
   main_window.setCentralWidget(&content_area);
-  
   main_window.show();
-  return app.exec();
+  int status = app.exec();
+  crQuit();
+  return status;
 }
 
 void crash (int code, int isFatal)

@@ -76,6 +76,15 @@ void cb_DeleteComponent (cbComponent* comp, cbHeader* header)
   }
 }
 
+cb_Close (cbHeader* header)
+{
+  for (int i = 0; i < header->table_cap; i++) {
+    free(header->table[i]);
+  }
+  free(header->table);
+  free(header);
+}
+
 // Given a pointer, finds the index of that pointer in the array.
 // Returns -1 if not found
 int cb_FindComponent (cbComponent* comp, const cbHeader* header)

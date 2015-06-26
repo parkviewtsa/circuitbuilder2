@@ -7,24 +7,27 @@
 
 CB_Canvas::CB_Canvas (char* filename = "")
 {
-    circuit_init(circuit_header, filename);
+  circuit_header = malloc(sizeof(cbHeader));
+  circuit_init(circuit_header, filename);
 
-    // crInit returns 1 if something went wrong; crash returns 1
-    // if the user chose to retry and exits otherwise
-    while (crInit()) crash(CB_ERR_SDL_INIT, FATAL);
+  QSize s = size();
+  crIndex w = s.width();
+  crIndex h = s.height();
+  delete &s;
 
-    QSize s = size();
-    crIndex w = s.width();
-    crIndex h = s.height();
-    delete &s;
+  void* img_buf = 0;
+  crResize(w, h);
+  crDraw();
+  crGetImg(&img_buf, &actual_width, &actual_height);
+  if (img_buf)
+    image = QImage((uchar*)img_buf, (int)w, (int)h, (int)w*3, QImage::Format_RGB888);
+  else
+}
 
-    void* img_buf = 0;
-    crResize(w, h);
-    crDraw();
-    crGetImg(&img_buf, &actual_width, &actual_height);
-    if (img_buf)
-        image = QImage((uchar*)img_buf, (int)w, (int)h, (int)w*3, QImage::Format_RGB888);
-    else
+CB_Canvas::~CB_Canvas ()
+{
+  cb_Close(circuit_header);
+  crDropAll();
 }
 
 QSize CB_Canvas::minimumSizeHint ()

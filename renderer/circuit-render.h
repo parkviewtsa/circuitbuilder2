@@ -70,3 +70,5 @@ void crGetViewPos (crScalar* x, crScalar* y);
 void crSetViewPos (crScalar x, crScalar y);
 crScalar crGetViewWidth ();
 void crSetViewWidth (crScalar w);
+void cbWorldToScreen (crScalar* x, crScalar* y);
+void cbScreenToWorld (crScalar* x, crScalar* y);

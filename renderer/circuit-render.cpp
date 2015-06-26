@@ -446,3 +446,27 @@ crItem* crGetClickedItem (crScalar x, crScalar y)
 	};
 	return out; // Return NULL if nothing at least nearby.
 };
+
+void cbWorldToScreen (crScalar* x, crScalar* y)
+{
+  if (x) *x = ((*x - crViewX) / crViewW) + 0.5;
+  if (y)
+  {
+    int winx,winy;
+    SDL_GetWindowSize(crWindow,&winx,&winy);
+    crScalar viewh = crViewW / (winsizex / (crScalar)winsizey);
+    *y = ((*y - crViewY) / viewh) + 0.5;
+  };
+}
+
+void cbScreenToWorld (crScalar* x, crScalar* y)
+{
+  if (x) *x = ((*x - 0.5) * crViewW) + crViewX;
+  if (y)
+  {
+    int winx,winy;
+    SDL_GetWindowSize(crWindow,&winx,&winy);
+    crScalar viewh = crViewW / (winsizex / (crScalar)winsizey);
+    *y = ((*y - 0.5) * viewh) + crViewY;
+  };
+}
