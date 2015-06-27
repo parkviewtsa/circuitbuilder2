@@ -99,7 +99,7 @@ crProto* crRequireProto (char* path) /// If NULL, something went wrong.
 	if (!fscanf(file,"%lu",&linecount))
 	{
 		crLastError = crError_BadProtoFile;
-		fclose(file); // Let it go. Else the file will be frozen until the app exits.
+		fclose(file); // Let it go. Elsa the file will be frozen until the app exits.
 		return NULL;
 	};
 	// Get actual lines.
@@ -108,16 +108,34 @@ crProto* crRequireProto (char* path) /// If NULL, something went wrong.
 	{
 		// That memory was really important to me.
 		crLastError = crError_FailedAlloc;
-		fclose(file); // Let it go. Else the file will be frozen until the app exits.
+		fclose(file); // Let it go. Elsa the file will be frozen until the app exits.
 		return NULL;
 	};
+	crIndex circlecount;
+	if (!fscanf(file,"%lu",&circlecount))
+    {
+        crLastError = crError_BadProtoFile;
+        fclose(file); // Let it go. Elsa the file will be frozen until the app exits.
+        free(lines); // Avoid a memory leak.
+        return NULL;
+    };
+    crCircle* circles = (crCircle*)malloc(sizeof(crCircle) * circlecount);
+    if (!circles)
+    {
+		// That memory was really important to me.
+		crLastError = crError_FailedAlloc;
+		fclose(file); // Let it go. Elsa the file will be frozen until the app exits.
+		free(lines); // Avoid a memory leak.
+		return NULL;
+    };
 	item = (crProto*)malloc(sizeof(crProto));
 	if (!item)
 	{
 		// That memory was really important to me.
 		crLastError = crError_FailedAlloc;
-		fclose(file); // Let it go. Else the file will be frozen until the app exits.
+		fclose(file); // Let it go. Elsa the file will be frozen until the app exits.
 		free(lines); // Avoid a memory leak.
+		free(circles); // Avoid a memory leak.
 		return NULL;
 	};
 	size_t pathlen = strlen(path) + 1; // Include the NULL character.
@@ -126,14 +144,17 @@ crProto* crRequireProto (char* path) /// If NULL, something went wrong.
 	{
 		// That memory was really important to me.
 		crLastError = crError_FailedAlloc;
-		fclose(file); // Let it go. Else the file will be frozen until the app exits.
+		fclose(file); // Let it go. Elsa the file will be frozen until the app exits.
 		free(lines); // Avoid a memory leak.
+		free(circles); // Avoid a memory leak.
 		free(item); // Avoid a memory leak.
 		return NULL;
 	};
 	memcpy(item->loadedfrom,path,pathlen); // Copy string.
 	item->linecount = linecount;
 	item->lines = lines;
+	item->circlecount = circlecount;
+	item->circles = circles;
 	item->loadedfrom = path;
 	for (i = 0; i < linecount; i++)
 	{
@@ -141,8 +162,9 @@ crProto* crRequireProto (char* path) /// If NULL, something went wrong.
 		if (fscanf(file,"%lf%lf%lf%lf",&x1,&y1,&x2,&y2) < 4)
 		{
 			crLastError = crError_BadProtoFile;
-			fclose(file); // Let it go. Else the file will be frozen until the app exits.
+			fclose(file); // Let it go. Elsa the file will be frozen until the app exits.
 			free(lines); // Avoid a memory leak.
+            free(circles); // Avoid a memory leak.
 			free(item); // Avoid a memory leak.
 			free(item->loadedfrom); // Avoid a memory leak.
 			return NULL;
@@ -153,14 +175,32 @@ crProto* crRequireProto (char* path) /// If NULL, something went wrong.
 		lines->y2 = y2;
 		lines++;
 	};
+	for (i = 0; i < circlecount; i++)
+    {
+        double x,y,r;
+        if (fscanf(file,"%lf%lf%lf",&x,&y,&r) < 3)
+        {
+            crLastError = crError_BadProtoFile;
+			fclose(file); // Let it go. Elsa the file will be frozen until the app exits.
+			free(lines); // Avoid a memory leak.
+            free(circles); // Avoid a memory leak.
+			free(item); // Avoid a memory leak.
+			free(item->loadedfrom); // Avoid a memory leak.
+			return NULL;
+        };
+		circles->x = x;
+		circles->y = y;
+		circles->r = r;
+		circles++;
+    };
 	fclose(file);
-	// Now add this to the archive.
+	// Now add this to the cache.
 	crProtos = (crProto**)realloc(crProtos,sizeof(void*) * (crProtoCount + 1));
 	if (!crProtos)
 	{
 		// You done screwed it up, now. *cough* thanks a lot windows *cough*
 		printf("Fatal allocation failure: crProtos main list block realloc\n");
-		exit(-1);
+		exit(CB_GROW_ALLOC_FAIL);
 	};
 	*(crProtos + crProtoCount) = item;
 	crProtoCount++;
