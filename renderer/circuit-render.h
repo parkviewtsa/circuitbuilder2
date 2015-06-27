@@ -18,10 +18,16 @@ struct crLine
 {
 	crScalar x1,y1,x2,y2;
 };
+struct crCircle
+{
+    crScalar x,y,r;
+};
 struct crProto
 {
 	crLine* lines;
 	crIndex linecount;
+	crCircle* circles;
+	crIndex circlecount;
 	char* loadedfrom;
 };
 /// The reason crProtos is not a single-block list is

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <SDL2/SDL.h>
+#include <math.h>
 
 #define crShowWindow
 #include "circuit-render.h"
@@ -496,10 +497,9 @@ SDL_Texture* crDrawCircle (crIndex radius, SDL_Color color)
         {
             crIndex x_sq = x - (radius + 1);
             x_sq *= x_sq;
-            SDL_Color writecolor;
-            float diff = ((signed long)(y_sq + x_sq) - r_sq) / (float)r_sq;
-            if (diff < 0 && diff > -0.02) writecolor = color;
-            else writecolor = {0,0,0,0};
+            SDL_Color writecolor = {0,0,0,0};
+            signed long total = y_sq + x_sq;
+            if (total - r_sq < 0) if (powf(total,0.5f) - radius > -1) writecolor = color;
             *pixel = writecolor.r;
             pixel++;
             *pixel = writecolor.g;
