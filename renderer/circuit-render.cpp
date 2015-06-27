@@ -5,7 +5,7 @@
 
 #define crShowWindow
 #include "circuit-render.h"
-#include "error.h"
+#define CB_GROW_ALLOC_FAIL 1984
 
 crIndex crLastError = 0;
 crIndex crGetError ()
@@ -37,7 +37,7 @@ crItem* crCreateItem (char* path) // Returns NULL if something went wrong.
 	{
 		// You done screwed it up, now. *cough* thanks a lot windows *cough*
 		printf("Fatal allocation failure: crItems main list block realloc, during grow\n");
-		exit(CR_ERR_GROW_ALLOC_FAIL);
+		exit(CB_GROW_ALLOC_FAIL);
 	};
 	*(crItems + crItemCount) = out;
 	crItemCount++;
@@ -61,7 +61,7 @@ void crDestroyItem (crItem* todel)
 			{
 				// You done screwed it up, now. *cough* thanks a lot windows *cough*
 				printf("Fatal allocation failure: crItems main list block realloc, during shrink\n");
-				exit(-1);
+				exit(CB_GROW_ALLOC_FAIL);
 			};
 			break;
 		};
@@ -449,24 +449,68 @@ crItem* crGetClickedItem (crScalar x, crScalar y)
 
 void cbWorldToScreen (crScalar* x, crScalar* y)
 {
-  if (x) *x = ((*x - crViewX) / crViewW) + 0.5;
-  if (y)
-  {
-    int winx,winy;
-    SDL_GetWindowSize(crWindow,&winx,&winy);
-    crScalar viewh = crViewW / (winsizex / (crScalar)winsizey);
-    *y = ((*y - crViewY) / viewh) + 0.5;
-  };
-}
+    if (x) *x = ((*x - crViewX) / crViewW) + 0.5;
+    if (y)
+    {
+        int winx,winy;
+        SDL_GetWindowSize(crWindow,&winx,&winy);
+        crScalar viewh = crViewW / (winx / (crScalar)winy);
+        *y = ((*y - crViewY) / viewh) + 0.5;
+    };
+};
 
 void cbScreenToWorld (crScalar* x, crScalar* y)
 {
-  if (x) *x = ((*x - 0.5) * crViewW) + crViewX;
-  if (y)
-  {
-    int winx,winy;
-    SDL_GetWindowSize(crWindow,&winx,&winy);
-    crScalar viewh = crViewW / (winsizex / (crScalar)winsizey);
-    *y = ((*y - 0.5) * viewh) + crViewY;
-  };
-}
+    if (x) *x = ((*x - 0.5) * crViewW) + crViewX;
+    if (y)
+    {
+        int winx,winy;
+        SDL_GetWindowSize(crWindow,&winx,&winy);
+        crScalar viewh = crViewW / (winx / (crScalar)winy);
+        *y = ((*y - 0.5) * viewh) + crViewY;
+    };
+};
+
+SDL_Texture* crDrawCircle (crIndex radius, SDL_Color color)
+{
+    #if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    Uint32 rmask = 0xff000000;
+    Uint32 gmask = 0x00ff0000;
+    Uint32 bmask = 0x0000ff00;
+    Uint32 amask = 0x000000ff;
+    #else
+    Uint32 rmask = 0x000000ff;
+    Uint32 gmask = 0x0000ff00;
+    Uint32 bmask = 0x00ff0000;
+    Uint32 amask = 0xff000000;
+    #endif
+    crIndex surfdims = (radius * 2) + 1;
+    SDL_Surface* surf = SDL_CreateRGBSurface(0,surfdims,surfdims,32,rmask,gmask,bmask,amask);
+    signed long r_sq = radius * radius;
+    Uint8* pixel = surf->pixels;
+    for (crIndex y = 0; y < surfdims; y++)
+    {
+        crIndex y_sq = y - (radius + 1);
+        y_sq *= y_sq;
+        for (crIndex x = 0; x < surfdims; x++)
+        {
+            crIndex x_sq = x - (radius + 1);
+            x_sq *= x_sq;
+            SDL_Color writecolor;
+            float diff = ((signed long)(y_sq + x_sq) - r_sq) / (float)r_sq;
+            if (diff < 0 && diff > -0.02) writecolor = color;
+            else writecolor = {0,0,0,0};
+            *pixel = writecolor.r;
+            pixel++;
+            *pixel = writecolor.g;
+            pixel++;
+            *pixel = writecolor.b;
+            pixel++;
+            *pixel = writecolor.a;
+            pixel++;
+        };
+    };
+    SDL_Texture* tex = SDL_CreateTextureFromSurface(crRenderer,surf);
+    SDL_FreeSurface(surf);
+    return tex;
+};
