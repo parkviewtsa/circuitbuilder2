@@ -7,6 +7,8 @@
 
 CB_Canvas::CB_Canvas (char* filename = "")
 {
+  setAcceptDrops(true);
+
   circuit_header = malloc(sizeof(cbHeader));
   circuit_init(circuit_header, filename);
 
@@ -18,10 +20,12 @@ CB_Canvas::CB_Canvas (char* filename = "")
   void* img_buf = 0;
   crResize(w, h);
   crDraw();
+  get_buf:
   crGetImg(&img_buf, &actual_width, &actual_height);
   if (img_buf)
     image = QImage((uchar*)img_buf, (int)w, (int)h, (int)w*3, QImage::Format_RGB888);
-  else
+  else if crash(CR_ERR_NO_BUF, FATAL) goto get_buf;
+  else delete this;
 }
 
 CB_Canvas::~CB_Canvas ()

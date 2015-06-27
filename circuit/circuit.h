@@ -1,10 +1,6 @@
 #ifndef CIRCUIT_H
 #define CIRCUIT_H
 
-// A few shortcuts that I'll never use
-#define false 0
-#define true 1
-
 // Component IDs (tags)
 #define CB_BATT     0x03
 #define CB_CELL     0x06
