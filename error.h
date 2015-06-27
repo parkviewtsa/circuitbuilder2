@@ -21,7 +21,7 @@
 #define CB_ERR_RFILE 9 // File read error
 #define CB_ERR_WFILE 10 // File write error
 
-#define CR_ERR_GROW_ALLOC_FAIL 42 // The renderer tried to allocate memory to
+#define CB_GROW_ALLOC_FAIL 42 // The renderer tried to allocate memory to
 // grow a list and it got a NULL instead. No chance of recovery.
 
 #define CB_ERR_WTF		-1	// For when you just don't know what happened.
