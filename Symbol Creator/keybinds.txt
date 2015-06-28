@@ -1,0 +1,10 @@
+9
+12 Modify Point 0 1
+8 New Line 32 0
+10 New Circle 120 0
+6 Delete 0 3
+4 Save 13 0
+4 Crop 99 0
+19 Snap to Axis Angles 1073742049 0
+18 Snap to 10x10 Grid 1073742048 0
+21 Snap to Other Objects 1073742050 0

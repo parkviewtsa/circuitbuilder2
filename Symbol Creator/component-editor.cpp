@@ -340,6 +340,7 @@ void Crop ()
 	free(coords);
 	// don't free coords_sub, because it is coords
 };
+char* thumbnail_save_path = NULL;
 void CaptureScreen ()
 {
     int winx;
@@ -363,20 +364,25 @@ void CaptureScreen ()
     Uint32 amask = 0x00000000;
     #endif
     SDL_Surface* screen = SDL_CreateRGBSurfaceFrom(pixels,winx,winx,24,winx * 3,rmask,gmask,bmask,amask);
-    IMG_SavePNG(screen,"new-symbol-thumbnail.png");
+    IMG_SavePNG(screen,thumbnail_save_path);
+    free(thumbnail_save_path);
     SDL_FreeSurface(screen);
 };
-bool JustSaved = false;
 void Save ()
 {
-	FILE* file = fopen("new-symbol.cbip","r");
-	if (file)
-	{
-		fclose(file);
-		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING,"File I/O Warning","Saving would overwrite an existing file. Delete it first.",NULL);
-		return;
-	};
-	file = fopen("new-symbol.cbip","w");
+    FILE* file;
+    char* pathtext;
+    slBU pathid = 0;
+    while (true)
+    {
+        pathtext = asprintf(&pathtext,"new-symbol-%lu.cbip",pathid);
+        file = fopen(pathtext,"r");
+        if (!file) break;
+        free(pathtext);
+    };
+    asprintf(&thumbnail_save_path,"new-thumbnail-%lu.png",pathid);
+	file = fopen(pathtext,"w");
+	free(pathtext);
 	if (file)
 	{
 		fprintf(file,"%u",LineCount);
@@ -406,7 +412,6 @@ void Save ()
             );
         };
 		fclose(file);
-        JustSaved = true;
 	}
 	else SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING,"File I/O Error","Can't open output file for writing.",NULL);
 };
@@ -415,14 +420,14 @@ int main ()
 	printf("Instructions...\n\n");
 	printf(
 		"Spawn New Line: PRESS [SPACE]\n\
-		Spawn New Circle: PRESS [LEFT ALT]\n\
+		Spawn New Circle: PRESS [X]\n\
 		Modify Point: HOLD [LEFT MOUSE]\n\
 		Delete Line or Circle: PRESS [RIGHT MOUSE]\n\
 		Save Symbol: PRESS [ENTER]\n\
 		Crop Image: PRESS [C]\n\
 		Snap to Axis Angles: HOLD [LEFT SHIFT]\n\
 		Snap to 10x10 Grid: HOLD [LEFT CONTROL]\n\
-		Snap to Other Objects: HOLD [Z]\n\
+		Snap to Other Objects: HOLD [ALT]\n\
 		\n\
 		If using grid snapping and object snapping,\n\
 		object snapping takes precedence.\n\
@@ -436,7 +441,7 @@ int main ()
 	click->onpress = Grab;
 	click->onrelease = Release;
 	slGetKeyBind("New Line",SDLK_SPACE,0)->onpress = CreateLine;
-	slGetKeyBind("New Circle",SDLK_c,0)->onpress = CreateCircle;
+	slGetKeyBind("New Circle",SDLK_x,0)->onpress = CreateCircle;
 	slGetKeyBind("Delete",0,3)->onpress = DeleteSomething;
 	slGetKeyBind("Save",SDLK_RETURN,0)->onpress = Save;
 	slGetKeyBind("Crop",SDLK_c,0)->onpress = Crop;
@@ -447,9 +452,8 @@ int main ()
 	{
 		slCycle();
 		slBU cur;
-		if (JustSaved)
+		if (thumbnail_save_path)
         {
-            JustSaved = false;
             // This can't be done inside the callback,
             // because the callback is called by slCycle,
             // so if we try to call slCycle to re-render
@@ -601,6 +605,12 @@ int main ()
                         grabbed->y = circle->center->y + ((grabbed->y - circle->center->y) * (r / dist));
                         goto FOUND;
                     };
+                };
+                for (cur = 0; cur < LineCount; cur++)
+                {
+                    line = *(Lines + cur);
+                    if (line->endpoint1 == grabbed || line->endpoint2 == grabbed) continue;
+
                 };
                 FOUND:
                 if (grabbed_aux)
