@@ -13,6 +13,11 @@ int main ()
 	// can't do until it is initialized is actually
 	// draw a frame.
 	crItem* example = crCreateItem("example-proto.cbip");
+	if (!example)
+    {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,"Prototype Loading Failure","Couldn't load prototype.",NULL);
+        exit(0xDEADBEEF);
+    };
 	example->posx = -0.5;
 	example->posy = -0.5;
 	crSetViewWidth(2);

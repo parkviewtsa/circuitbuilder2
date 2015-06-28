@@ -60,7 +60,7 @@ void crDestroyItem (crItem* todel)
 			crItems = (crItem**)realloc(crItems,sizeof(void*) * crItemCount);
 			if (!crItems)
 			{
-				// You done screwed it up, now. *cough* thanks a lot windows *cough*
+                // no chance of recovery from this
 				printf("Fatal allocation failure: crItems main list block realloc, during shrink\n");
 				exit(CB_GROW_ALLOC_FAIL);
 			};
@@ -92,15 +92,14 @@ crProto* crRequireProto (char* path) /// If NULL, something went wrong.
 	if (!file)
 	{
 		crLastError = crError_NoProtoFile;
-		return NULL;
+		goto FAIL_5;
 	};
-	long unsigned linecount;
 	// Get number of lines.
+	long unsigned linecount;
 	if (!fscanf(file,"%lu",&linecount))
 	{
 		crLastError = crError_BadProtoFile;
-		fclose(file); // Let it go. Elsa the file will be frozen until the app exits.
-		return NULL;
+		goto FAIL_4;
 	};
 	// Get actual lines.
 	crLine* lines = (crLine*)malloc(sizeof(crLine) * linecount);
@@ -108,47 +107,36 @@ crProto* crRequireProto (char* path) /// If NULL, something went wrong.
 	{
 		// That memory was really important to me.
 		crLastError = crError_FailedAlloc;
-		fclose(file); // Let it go. Elsa the file will be frozen until the app exits.
-		return NULL;
+		goto FAIL_4;
 	};
+	// Get number of circles.
 	crIndex circlecount;
 	if (!fscanf(file,"%lu",&circlecount))
     {
         crLastError = crError_BadProtoFile;
-        fclose(file); // Let it go. Elsa the file will be frozen until the app exits.
-        free(lines); // Avoid a memory leak.
-        return NULL;
+        goto FAIL_3;
     };
+    // Get actual circles.
     crCircle* circles = (crCircle*)malloc(sizeof(crCircle) * circlecount);
     if (!circles)
     {
 		// That memory was really important to me.
 		crLastError = crError_FailedAlloc;
-		fclose(file); // Let it go. Elsa the file will be frozen until the app exits.
-		free(lines); // Avoid a memory leak.
-		return NULL;
+		goto FAIL_3;
     };
 	item = (crProto*)malloc(sizeof(crProto));
 	if (!item)
 	{
 		// That memory was really important to me.
 		crLastError = crError_FailedAlloc;
-		fclose(file); // Let it go. Elsa the file will be frozen until the app exits.
-		free(lines); // Avoid a memory leak.
-		free(circles); // Avoid a memory leak.
-		return NULL;
+		goto FAIL_2;
 	};
 	size_t pathlen = strlen(path) + 1; // Include the NULL character.
 	item->loadedfrom = malloc(pathlen); // Keep an internal copy.
 	if (!item->loadedfrom)
 	{
 		// That memory was really important to me.
-		crLastError = crError_FailedAlloc;
-		fclose(file); // Let it go. Elsa the file will be frozen until the app exits.
-		free(lines); // Avoid a memory leak.
-		free(circles); // Avoid a memory leak.
-		free(item); // Avoid a memory leak.
-		return NULL;
+		goto FAIL_1;
 	};
 	memcpy(item->loadedfrom,path,pathlen); // Copy string.
 	item->linecount = linecount;
@@ -156,18 +144,14 @@ crProto* crRequireProto (char* path) /// If NULL, something went wrong.
 	item->circlecount = circlecount;
 	item->circles = circles;
 	item->loadedfrom = path;
+	printf("Reached\n");
 	for (i = 0; i < linecount; i++)
 	{
 		double x1,y1,x2,y2;
 		if (fscanf(file,"%lf%lf%lf%lf",&x1,&y1,&x2,&y2) < 4)
 		{
 			crLastError = crError_BadProtoFile;
-			fclose(file); // Let it go. Elsa the file will be frozen until the app exits.
-			free(lines); // Avoid a memory leak.
-            free(circles); // Avoid a memory leak.
-			free(item); // Avoid a memory leak.
-			free(item->loadedfrom); // Avoid a memory leak.
-			return NULL;
+			goto FAIL_0;
 		};
 		lines->x1 = x1;
 		lines->y1 = y1;
@@ -181,12 +165,7 @@ crProto* crRequireProto (char* path) /// If NULL, something went wrong.
         if (fscanf(file,"%lf%lf%lf",&x,&y,&r) < 3)
         {
             crLastError = crError_BadProtoFile;
-			fclose(file); // Let it go. Elsa the file will be frozen until the app exits.
-			free(lines); // Avoid a memory leak.
-            free(circles); // Avoid a memory leak.
-			free(item); // Avoid a memory leak.
-			free(item->loadedfrom); // Avoid a memory leak.
-			return NULL;
+			goto FAIL_0;
         };
 		circles->x = x;
 		circles->y = y;
@@ -198,13 +177,26 @@ crProto* crRequireProto (char* path) /// If NULL, something went wrong.
 	crProtos = (crProto**)realloc(crProtos,sizeof(void*) * (crProtoCount + 1));
 	if (!crProtos)
 	{
-		// You done screwed it up, now. *cough* thanks a lot windows *cough*
+		// no chance of recovery from this
 		printf("Fatal allocation failure: crProtos main list block realloc\n");
 		exit(CB_GROW_ALLOC_FAIL);
 	};
 	*(crProtos + crProtoCount) = item;
 	crProtoCount++;
 	return item;
+	// Cleaning up after errors (this section not reached if nothing went wrong).
+	FAIL_0:
+    free(item->loadedfrom); // Avoid a memory leak.
+    FAIL_1:
+    free(item); // Avoid a memory leak.
+    FAIL_2:
+    free(circles); // Avoid a memory leak.
+    FAIL_3:
+    free(lines); // Avoid a memory leak.
+    FAIL_4:
+    fclose(file); // Let it go. Elsa the file will be frozen until the app exits.
+    FAIL_5:
+    return NULL;
 };
 
 
@@ -375,7 +367,7 @@ SDL_Texture* crDrawCircle (crIndex radius, SDL_Color color)
             x_sq *= x_sq;
             SDL_Color writecolor = {0,0,0,0};
             signed long total = y_sq + x_sq;
-            if (total - r_sq < 0) if (powf(total,0.5f) - radius > -1) writecolor = color;
+            if (total - r_sq < 0) if (powf(total,0.5f) - radius >= -1) writecolor = color;
             *pixel = writecolor.r;
             pixel++;
             *pixel = writecolor.g;
@@ -442,10 +434,12 @@ void crDraw ()
             crCircle circle = *(item->proto->circles + j);
             SDL_Rect rect;
             rect.w = ((circle.r * item->scale) / crViewW) * winsizex;
+            SDL_Texture* tex = crDrawCircle(rect.w,item->color);
+            rect.w *= 2;
+            rect.w++;
             rect.h = rect.w;
             rect.x = ((((circle.x * item->scale) + item->posx) - crViewX) / crViewW) + 0.5;
             rect.y = ((((circle.x * item->scale) + item->posx) - crViewX) / crViewW) + 0.5;
-            SDL_Texture* tex = crDrawCircle(rect.w,item->color);
             SDL_RenderCopy(crRenderer,tex,NULL,&rect);
             SDL_DestroyTexture(tex);
         };

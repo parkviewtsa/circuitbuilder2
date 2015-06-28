@@ -1,0 +1,8 @@
+7
+12 Modify Point 0 1
+8 New Line 32 0
+10 New Circle 1073742050 0
+6 Delete 0 3
+4 Save 13 0
+4 Crop 99 0
+19 Snap to Axis Angles 1073742049 0
