@@ -508,9 +508,9 @@ int main ()
                 slScalar xten = (grabbed->x + (grabbed->w / 2)) * 10;
                 slScalar yten = (grabbed->y + (grabbed->h / 2)) * 10;
                 if (xten - (int)xten < 0.5) grabbed->x = ((int)xten * 0.1) - (grabbed->w / 2);
-                else grabbed->x = (((int)xten + 1) * 0.1) ;
-                if (yten - (int)yten < 0.5) grabbed->y = (int)yten * 0.1) - (grabbed->h / 2);
-                else grabbed->y = (((int)yten + 1) * 0.1);
+                else grabbed->x = (((int)xten + 1) * 0.1) - (grabbed->w / 2);
+                if (yten - (int)yten < 0.5) grabbed->y = ((int)yten * 0.1) - (grabbed->h / 2);
+                else grabbed->y = (((int)yten + 1) * 0.1) - (grabbed->h / 2);
             };
 			if (grabbed_aux)
             {
