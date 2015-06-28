@@ -7,12 +7,62 @@ struct Line
 	slBox* endpoint1;
 	slBox* endpoint2;
 };
+SDL_Texture* crDrawCircle (slBU radius, SDL_Color color)
+{
+    #if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    Uint32 rmask = 0xff000000;
+    Uint32 gmask = 0x00ff0000;
+    Uint32 bmask = 0x0000ff00;
+    Uint32 amask = 0x000000ff;
+    #else
+    Uint32 rmask = 0x000000ff;
+    Uint32 gmask = 0x0000ff00;
+    Uint32 bmask = 0x00ff0000;
+    Uint32 amask = 0xff000000;
+    #endif
+    slBU surfdims = (radius * 2) + 1;
+    SDL_Surface* surf = SDL_CreateRGBSurface(0,surfdims,surfdims,32,rmask,gmask,bmask,amask);
+    signed long r_sq = radius * radius;
+    Uint8* pixel = surf->pixels;
+    for (slBU y = 0; y < surfdims; y++)
+    {
+        slBU y_sq = y - (radius + 1);
+        y_sq *= y_sq;
+        for (slBU x = 0; x < surfdims; x++)
+        {
+            slBU x_sq = x - (radius + 1);
+            x_sq *= x_sq;
+            SDL_Color writecolor = {0,0,0,0};
+            signed long total = y_sq + x_sq;
+            if (total - r_sq < 0) if (powf(total,0.5f) - radius > -1) writecolor = color;
+            *pixel = writecolor.r;
+            pixel++;
+            *pixel = writecolor.g;
+            pixel++;
+            *pixel = writecolor.b;
+            pixel++;
+            *pixel = writecolor.a;
+            pixel++;
+        };
+    };
+    SDL_Texture* tex = SDL_CreateTextureFromSurface(slRenderer,surf);
+    SDL_FreeSurface(surf);
+    return tex;
+};
+struct Circle
+{
+    slBox* center;
+    slBox* radius;
+};
 Line** Lines = NULL;
 slBU LineCount = 0;
-void DrawLines (int winw, int winh)
+Circle** Circles = NULL;
+slBU CircleCount = 0;
+void Draw (int winw, int winh)
 {
 	SDL_SetRenderDrawColor(slRenderer,255,255,255,255);
-	for (slBU cur = 0; cur < LineCount; cur++)
+	slBU cur;
+	for (cur = 0; cur < LineCount; cur++)
 	{
 		slBox* endpoint1 = (*(Lines + cur))->endpoint1;
 		slBox* endpoint2 = (*(Lines + cur))->endpoint2;
@@ -22,15 +72,43 @@ void DrawLines (int winw, int winh)
 			(endpoint2->x + (endpoint2->w / 2)) * winw,(endpoint2->y + (endpoint2->h / 2)) * winh
 		);
 	};
+	for (cur = 0; cur < CircleCount; cur++)
+    {
+
+    };
 };
 slBox* grabbed = NULL;
-void GrabLine ()
+void Grab ()
 {
-	for (slBU cur = 0; cur < LineCount; cur++)
+    slBU cur;
+	for (cur = 0; cur < LineCount; cur++)
 	{
-		if (slPointOnBox((*(Lines + cur))->endpoint1,slMouseX,slMouseY)) grabbed = (*(Lines + cur))->endpoint1;
-		if (slPointOnBox((*(Lines + cur))->endpoint2,slMouseX,slMouseY)) grabbed = (*(Lines + cur))->endpoint2;
+	    Line* line = *(Lines + cur);
+        if (slPointOnBox(line->endpoint1,slMouseX,slMouseY))
+        {
+            grabbed = line->endpoint1;
+            return;
+        }
+		else if (slPointOnBox(line->endpoint2,slMouseX,slMouseY))
+        {
+            grabbed = line->endpoint2;
+            return;
+        };
 	};
+	for (cur = 0; cur < CircleCount; cur++)
+    {
+        Circle* circle = *(Circles + cur);
+        if (slPointOnBox(circle->center))
+        {
+            grabbed = line->center;
+            return;
+        }
+        else if (slPointOnBox(circle->radius))
+        {
+            grabbed = line->radius;
+            return;
+        };
+    };
 };
 void ReleaseLine ()
 {
@@ -150,7 +228,7 @@ void CropLines ()
 	free(coords);
 	// don't free coords_sub, because it is coords
 };
-void SaveLines ()
+void Save ()
 {
 	FILE* file = fopen("new-symbol.cbip","r");
 	if (file)
@@ -163,28 +241,54 @@ void SaveLines ()
 	if (file)
 	{
 		fprintf(file,"%u",LineCount);
-		for (slBU cur = 0; cur < LineCount; cur++)
+		fprintf(file,"%u",CircleCount);
+		slBU cur;
+		for (cur = 0; cur < LineCount; cur++)
 		{
 			Line* line = *(Lines + cur);
-			fprintf(
-				file," %f %f %f %f",
-				line->endpoint1->x + (line->endpoint1->w / 2),line->endpoint1->y + (line->endpoint1->h / 2),
-				line->endpoint2->x + (line->endpoint2->w / 2),line->endpoint2->y + (line->endpoint2->h / 2)
+			fprintf(file," %f %f %f %f",
+				((line->endpoint1->x + (line->endpoint1->w / 2)) * 2) - 1,
+                ((line->endpoint1->y + (line->endpoint1->h / 2)) * 2) - 1,
+				((line->endpoint2->x + (line->endpoint2->w / 2)) * 2) - 1,
+                ((line->endpoint2->y + (line->endpoint2->h / 2)) * 2) - 1
 			);
 		};
+		for (cur = 0; cur < CircleCount; cur++)
+        {
+            Circle* circle = *(Circles + cur);
+            crScalar radius_x = (circle->radius->x - circle->center->x) * 2;
+            radius_x *= radius_x;
+            crScalar radius_y = (circle->radius->y - circle->center->y) * 2;
+            radius_y *= radius_y;
+            fprintf(file," %f %f %f",
+                ((circle->center->x + (circle->center->w / 2)) * 2) - 1,
+                ((circle->center->y + (circle->center->h / 2)) * 2) - 1,
+                pow(radius_x + radius_y,0.5)
+            );
+        };
 		fclose(file);
 	}
 	else SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING,"File I/O Error","Can't open output file for writing.",NULL);
+};
+bool Snap90 = false;
+void BeginSnap90 ()
+{
+    Snap90 = true;
+};
+void EndSnap90 ()
+{
+    Snap90 = false;
 };
 int main ()
 {
 	printf("Instructions...\n\n");
 	printf(
-		"Spawn New Line: PRESS SPACE\n\
-		Modify Point: HOLD LEFT MOUSE\n\
-		Delete Line: PRESS RIGHT MOUSE\n\
-		Save Symbol: ENTER\n\
-		Crop Image: C\n\
+		"Spawn New Line: PRESS [SPACE]\n\
+		Modify Point: HOLD [LEFT MOUSE]\n\
+		Delete Line: PRESS [RIGHT MOUSE]\n\
+		Save Symbol: PRESS [ENTER]\n\
+		Crop Image: PRESS [C]\n\
+		Snap To Axis Angles: HOLD [LEFT SHIFT]\n\
 		\n"
 	);
 	printf("Press enter to continue.\n");
@@ -198,6 +302,9 @@ int main ()
 	slGetKeyBind("Delete Line",0,3)->onpress = DeleteLine;
 	slGetKeyBind("Save",SDLK_RETURN,0)->onpress = SaveLines;
 	slGetKeyBind("Crop",SDLK_c,0)->onpress = CropLines;
+	slKeyBind* snap90bind = slGetKeyBind("Snap To Axis Angles",SDLK_LSHIFT);
+	snap90bind->onpress = BeginSnap90;
+	snap90bind->onrelease = EndSnap90;
 	while (!slExitReq)
 	{
 		slCycle();

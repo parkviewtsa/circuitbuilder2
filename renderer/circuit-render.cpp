@@ -348,18 +348,62 @@ void crResize (crIndex w, crIndex h)
 	SDL_GetWindowSize(crWindow,&winsizex,&winsizey);
 	if (winsizex != w || winsizey != h) SDL_SetWindowSize(crWindow,w,h);
 };
+SDL_Texture* crDrawCircle (crIndex radius, SDL_Color color)
+{
+    #if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    Uint32 rmask = 0xff000000;
+    Uint32 gmask = 0x00ff0000;
+    Uint32 bmask = 0x0000ff00;
+    Uint32 amask = 0x000000ff;
+    #else
+    Uint32 rmask = 0x000000ff;
+    Uint32 gmask = 0x0000ff00;
+    Uint32 bmask = 0x00ff0000;
+    Uint32 amask = 0xff000000;
+    #endif
+    crIndex surfdims = (radius * 2) + 1;
+    SDL_Surface* surf = SDL_CreateRGBSurface(0,surfdims,surfdims,32,rmask,gmask,bmask,amask);
+    signed long r_sq = radius * radius;
+    Uint8* pixel = surf->pixels;
+    for (crIndex y = 0; y < surfdims; y++)
+    {
+        crIndex y_sq = y - (radius + 1);
+        y_sq *= y_sq;
+        for (crIndex x = 0; x < surfdims; x++)
+        {
+            crIndex x_sq = x - (radius + 1);
+            x_sq *= x_sq;
+            SDL_Color writecolor = {0,0,0,0};
+            signed long total = y_sq + x_sq;
+            if (total - r_sq < 0) if (powf(total,0.5f) - radius > -1) writecolor = color;
+            *pixel = writecolor.r;
+            pixel++;
+            *pixel = writecolor.g;
+            pixel++;
+            *pixel = writecolor.b;
+            pixel++;
+            *pixel = writecolor.a;
+            pixel++;
+        };
+    };
+    SDL_Texture* tex = SDL_CreateTextureFromSurface(crRenderer,surf);
+    SDL_FreeSurface(surf);
+    return tex;
+};
 void crDraw ()
 {
 	if (!crReady) if (crInit()) return; // Can't use SDL stuff unless it is initialized.
 	int winsizex,winsizey;
 	SDL_GetWindowSize(crWindow,&winsizex,&winsizey);
+    crScalar viewh = crViewW / (winsizex / (crScalar)winsizey);
 	SDL_SetRenderDrawColor(crRenderer,0,0,0,0);
 	SDL_RenderClear(crRenderer);
 	for (crIndex i = 0; i < crItemCount; i++)
 	{
 		crItem* item = *(crItems + i);
 		SDL_SetRenderDrawColor(crRenderer,item->color.r,item->color.g,item->color.b,item->color.a);
-		for (crIndex j = 0; j < item->proto->linecount; j++)
+		crIndex j;
+		for (j = 0; j < item->proto->linecount; j++)
 		{
 			crLine line = *(item->proto->lines + j);
 			line.x1 *= item->scale;
@@ -374,7 +418,6 @@ void crDraw ()
 			line.y1 -= crViewY;
 			line.x2 -= crViewX;
 			line.y2 -= crViewY;
-			crScalar viewh = crViewW / (winsizex / (crScalar)winsizey);
 			line.x1 /= crViewW;
 			line.y1 /= viewh;
 			line.x2 /= crViewW;
@@ -394,6 +437,18 @@ void crDraw ()
 			// This is using winsizex only, because using
 			// winsizex and winsizey will not preserve aspect ratio.
 		};
+		for (j = 0; j < item->proto->circlecount; j++)
+        {
+            crCircle circle = *(item->proto->circles + j);
+            SDL_Rect rect;
+            rect.w = ((circle.r * item->scale) / crViewW) * winsizex;
+            rect.h = rect.w;
+            rect.x = ((((circle.x * item->scale) + item->posx) - crViewX) / crViewW) + 0.5;
+            rect.y = ((((circle.x * item->scale) + item->posx) - crViewX) / crViewW) + 0.5;
+            SDL_Texture* tex = crDrawCircle(rect.w,item->color);
+            SDL_RenderCopy(crRenderer,tex,NULL,&rect);
+            SDL_DestroyTexture(tex);
+        };
 	};
 	SDL_RenderPresent(crRenderer);
 	if (crImgW != winsizex || crImgH != winsizey)
@@ -510,47 +565,4 @@ void cbScreenToWorld (crScalar* x, crScalar* y)
         crScalar viewh = crViewW / (winx / (crScalar)winy);
         *y = ((*y - 0.5) * viewh) + crViewY;
     };
-};
-
-SDL_Texture* crDrawCircle (crIndex radius, SDL_Color color)
-{
-    #if SDL_BYTEORDER == SDL_BIG_ENDIAN
-    Uint32 rmask = 0xff000000;
-    Uint32 gmask = 0x00ff0000;
-    Uint32 bmask = 0x0000ff00;
-    Uint32 amask = 0x000000ff;
-    #else
-    Uint32 rmask = 0x000000ff;
-    Uint32 gmask = 0x0000ff00;
-    Uint32 bmask = 0x00ff0000;
-    Uint32 amask = 0xff000000;
-    #endif
-    crIndex surfdims = (radius * 2) + 1;
-    SDL_Surface* surf = SDL_CreateRGBSurface(0,surfdims,surfdims,32,rmask,gmask,bmask,amask);
-    signed long r_sq = radius * radius;
-    Uint8* pixel = surf->pixels;
-    for (crIndex y = 0; y < surfdims; y++)
-    {
-        crIndex y_sq = y - (radius + 1);
-        y_sq *= y_sq;
-        for (crIndex x = 0; x < surfdims; x++)
-        {
-            crIndex x_sq = x - (radius + 1);
-            x_sq *= x_sq;
-            SDL_Color writecolor = {0,0,0,0};
-            signed long total = y_sq + x_sq;
-            if (total - r_sq < 0) if (powf(total,0.5f) - radius > -1) writecolor = color;
-            *pixel = writecolor.r;
-            pixel++;
-            *pixel = writecolor.g;
-            pixel++;
-            *pixel = writecolor.b;
-            pixel++;
-            *pixel = writecolor.a;
-            pixel++;
-        };
-    };
-    SDL_Texture* tex = SDL_CreateTextureFromSurface(crRenderer,surf);
-    SDL_FreeSurface(surf);
-    return tex;
 };
