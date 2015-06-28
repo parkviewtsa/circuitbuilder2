@@ -421,6 +421,7 @@ int main ()
 		Save Symbol: PRESS [ENTER]\n\
 		Crop Image: PRESS [C]\n\
 		Snap to Axis Angles: HOLD [LEFT SHIFT]\n\
+		Snap to 10x10 Grid: HOLD [LEFT CONTROL]\n\
 		\n"
 	);
 	printf("Press enter to continue.\n");
@@ -436,6 +437,7 @@ int main ()
 	slGetKeyBind("Save",SDLK_RETURN,0)->onpress = Save;
 	slGetKeyBind("Crop",SDLK_c,0)->onpress = Crop;
 	slKeyBind* snap90 = slGetKeyBind("Snap to Axis Angles",SDLK_LSHIFT,0);
+	slKeyBind* snapGrid = slGetKeyBind("Snap to 10x10 Grid",SDLK_LCTRL,0);
 	while (!slExitReq)
 	{
 		slCycle();
@@ -501,6 +503,15 @@ int main ()
 		{
 			grabbed->x = slMouseX - (grabbed->w / 2);
 			grabbed->y = slMouseY - (grabbed->h / 2);
+			if (snapGrid->down)
+            {
+                slScalar xten = (grabbed->x + (grabbed->w / 2)) * 10;
+                slScalar yten = (grabbed->y + (grabbed->h / 2)) * 10;
+                if (xten - (int)xten < 0.5) grabbed->x = ((int)xten * 0.1) - (grabbed->w / 2);
+                else grabbed->x = (((int)xten + 1) * 0.1) ;
+                if (yten - (int)yten < 0.5) grabbed->y = (int)yten * 0.1) - (grabbed->h / 2);
+                else grabbed->y = (((int)yten + 1) * 0.1);
+            };
 			if (grabbed_aux)
             {
                 grabbed_aux->x = grabbed->x + grabbed_aux_DiffX;
