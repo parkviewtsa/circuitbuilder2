@@ -537,7 +537,7 @@ crItem* crGetClickedItem (crScalar x, crScalar y)
 	return out; // Return NULL if nothing at least nearby.
 };
 
-void cbWorldToScreen (crScalar* x, crScalar* y)
+void crWorldToScreen (crScalar* x, crScalar* y)
 {
     if (x) *x = ((*x - crViewX) / crViewW) + 0.5;
     if (y)
@@ -549,7 +549,7 @@ void cbWorldToScreen (crScalar* x, crScalar* y)
     };
 };
 
-void cbScreenToWorld (crScalar* x, crScalar* y)
+void crScreenToWorld (crScalar* x, crScalar* y)
 {
     if (x) *x = ((*x - 0.5) * crViewW) + crViewX;
     if (y)
