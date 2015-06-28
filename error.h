@@ -24,8 +24,6 @@
 #define CB_GROW_ALLOC_FAIL 42 // The renderer tried to allocate memory to
 // grow a list and it got a NULL instead. No chance of recovery.
 
-#define CB_ERR_WTF		-1	// For when you just don't know what happened.
-
-#define CB_ERR_WTF		-1	// For when you just don't know what happened.
+#define CB_ERR_UNKNOWN	-1	// For when you just don't know what happened.
 
 extern char* get_error_string (int);
