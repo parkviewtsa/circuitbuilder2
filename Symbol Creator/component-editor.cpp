@@ -375,10 +375,12 @@ void Save ()
     slBU pathid = 0;
     while (true)
     {
-        pathtext = asprintf(&pathtext,"new-symbol-%lu.cbip",pathid);
+        asprintf(&pathtext,"new-symbol-%lu.cbip",pathid);
         file = fopen(pathtext,"r");
         if (!file) break;
+        fclose(file);
         free(pathtext);
+        pathid++;
     };
     asprintf(&thumbnail_save_path,"new-thumbnail-%lu.png",pathid);
 	file = fopen(pathtext,"w");
@@ -498,6 +500,7 @@ int main ()
                 circle->center->bordercolor = ClickBoxColor;
                 circle->radius->bordercolor = ClickBoxColor;
             };
+            thumbnail_save_path = NULL;
         };
 		// We need the window to have a 1:1 ratio of width to height,
 		// because otherwise symbols may appear warped.
