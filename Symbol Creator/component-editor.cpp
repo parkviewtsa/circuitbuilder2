@@ -436,13 +436,13 @@ int main ()
 	click->onpress = Grab;
 	click->onrelease = Release;
 	slGetKeyBind("New Line",SDLK_SPACE,0)->onpress = CreateLine;
-	slGetKeyBind("New Circle",SDLK_LALT,0)->onpress = CreateCircle;
+	slGetKeyBind("New Circle",SDLK_c,0)->onpress = CreateCircle;
 	slGetKeyBind("Delete",0,3)->onpress = DeleteSomething;
 	slGetKeyBind("Save",SDLK_RETURN,0)->onpress = Save;
 	slGetKeyBind("Crop",SDLK_c,0)->onpress = Crop;
 	slKeyBind* snap90 = slGetKeyBind("Snap to Axis Angles",SDLK_LSHIFT,0);
 	slKeyBind* snapGrid = slGetKeyBind("Snap to 10x10 Grid",SDLK_LCTRL,0);
-	slKeyBind* snapObjects = slGetKeyBind("Snap to Other Objects",SDLK_z,0);
+	slKeyBind* snapObjects = slGetKeyBind("Snap to Other Objects",SDLK_LALT,0);
 	while (!slExitReq)
 	{
 		slCycle();
@@ -560,8 +560,8 @@ int main ()
                         grabbed->y = line->endpoint1->y;
                         goto FOUND;
                     };
-                    if (fabs(line->endpoint1->x - grabbed->x) < grabbed->w)
-                    if (fabs(line->endpoint1->y - grabbed->y) < grabbed->h)
+                    if (fabs(line->endpoint2->x - grabbed->x) < grabbed->w)
+                    if (fabs(line->endpoint2->y - grabbed->y) < grabbed->h)
                     {
                         grabbed->x = line->endpoint2->x;
                         grabbed->y = line->endpoint2->y;
@@ -597,12 +597,17 @@ int main ()
                     slScalar dist = pow(x_sq + y_sq,0.5);
                     if (fabs(dist - r) < boxcornerdist)
                     {
-                        grabbed->x = ((grabbed->x - circle->center->x) / dist) * r;
-                        grabbed->y = ((grabbed->y - circle->center->y) / dist) * r;
+                        grabbed->x = circle->center->x + ((grabbed->x - circle->center->x) * (r / dist));
+                        grabbed->y = circle->center->y + ((grabbed->y - circle->center->y) * (r / dist));
                         goto FOUND;
                     };
                 };
-                FOUND:;
+                FOUND:
+                if (grabbed_aux)
+                {
+                    grabbed_aux->x = grabbed->x + grabbed_aux_DiffX;
+                    grabbed_aux->y = grabbed->y + grabbed_aux_DiffY;
+                };
             };
 		};
 	};
