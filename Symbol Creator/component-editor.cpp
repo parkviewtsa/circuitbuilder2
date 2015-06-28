@@ -422,6 +422,10 @@ int main ()
 		Crop Image: PRESS [C]\n\
 		Snap to Axis Angles: HOLD [LEFT SHIFT]\n\
 		Snap to 10x10 Grid: HOLD [LEFT CONTROL]\n\
+		Snap to Other Objects: HOLD [Z]\n\
+		\n\
+		If using grid snapping and object snapping,\n\
+		object snapping takes precedence.\n\
 		\n"
 	);
 	printf("Press enter to continue.\n");
@@ -438,6 +442,7 @@ int main ()
 	slGetKeyBind("Crop",SDLK_c,0)->onpress = Crop;
 	slKeyBind* snap90 = slGetKeyBind("Snap to Axis Angles",SDLK_LSHIFT,0);
 	slKeyBind* snapGrid = slGetKeyBind("Snap to 10x10 Grid",SDLK_LCTRL,0);
+	slKeyBind* snapObjects = slGetKeyBind("Snap to Other Objects",SDLK_z,0);
 	while (!slExitReq)
 	{
 		slCycle();
@@ -512,6 +517,8 @@ int main ()
                 if (yten - (int)yten < 0.5) grabbed->y = ((int)yten * 0.1) - (grabbed->h / 2);
                 else grabbed->y = (((int)yten + 1) * 0.1) - (grabbed->h / 2);
             };
+            Line* line;
+            Circle* circle;
 			if (grabbed_aux)
             {
                 grabbed_aux->x = grabbed->x + grabbed_aux_DiffX;
@@ -522,7 +529,7 @@ int main ()
                 slBox* otherbox = NULL;
                 for (cur = 0; cur < LineCount; cur++)
                 {
-                    Line* line = *(Lines + cur);
+                    line = *(Lines + cur);
                     if (line->endpoint1 == grabbed)
                     {
                         otherbox = line->endpoint2;
@@ -539,6 +546,63 @@ int main ()
                     if (fabs(otherbox->x - grabbed->x) > fabs(otherbox->y - grabbed->y)) grabbed->y = otherbox->y;
                     else grabbed->x = otherbox->x;
                 };
+            };
+            if (snapObjects->down)
+            {
+                for (cur = 0; cur < LineCount; cur++)
+                {
+                    line = *(Lines + cur);
+                    if (line->endpoint1 == grabbed || line->endpoint2 == grabbed) continue;
+                    if (fabs(line->endpoint1->x - grabbed->x) < grabbed->w)
+                    if (fabs(line->endpoint1->y - grabbed->y) < grabbed->h)
+                    {
+                        grabbed->x = line->endpoint1->x;
+                        grabbed->y = line->endpoint1->y;
+                        goto FOUND;
+                    };
+                    if (fabs(line->endpoint1->x - grabbed->x) < grabbed->w)
+                    if (fabs(line->endpoint1->y - grabbed->y) < grabbed->h)
+                    {
+                        grabbed->x = line->endpoint2->x;
+                        grabbed->y = line->endpoint2->y;
+                        goto FOUND;
+                    };
+                };
+                for (cur = 0; cur < CircleCount; cur++)
+                {
+                    circle = *(Circles + cur);
+                    if (circle->center == grabbed || circle->radius == grabbed) continue;
+                    if (fabs(circle->center->x - grabbed->x) < grabbed->w)
+                    if (fabs(circle->center->y - grabbed->y) < grabbed->h)
+                    {
+                        grabbed->x = circle->center->x;
+                        grabbed->y = circle->center->y;
+                        goto FOUND;
+                    };
+                };
+                slScalar boxcornerdist = pow((grabbed->w * grabbed->w) + (grabbed->h * grabbed->h),0.5);
+                for (cur = 0; cur < CircleCount; cur++)
+                {
+                    circle = *(Circles + cur);
+                    if (circle->center == grabbed || circle->radius == grabbed) continue;
+                    slScalar x_sq = circle->radius->x - circle->center->x;
+                    x_sq *= x_sq;
+                    slScalar y_sq = circle->radius->y - circle->center->y;
+                    y_sq *= y_sq;
+                    slScalar r = pow(x_sq + y_sq,0.5);
+                    x_sq = grabbed->x - circle->center->x;
+                    x_sq *= x_sq;
+                    y_sq = grabbed->y - circle->center->y;
+                    y_sq *= y_sq;
+                    slScalar dist = pow(x_sq + y_sq,0.5);
+                    if (fabs(dist - r) < boxcornerdist)
+                    {
+                        grabbed->x = ((grabbed->x - circle->center->x) / dist) * r;
+                        grabbed->y = ((grabbed->y - circle->center->y) / dist) * r;
+                        goto FOUND;
+                    };
+                };
+                FOUND:;
             };
 		};
 	};
