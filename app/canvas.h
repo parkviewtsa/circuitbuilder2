@@ -4,7 +4,8 @@
 class CB_Canvas : public QWidget
 {
 public:
-    CB_Canvas();
+    CB_Canvas ();
+    CB_Canvas* init (char*)
     QSize minimumSizeHint ();
     void resizeEvent ();
     void paintEvent ();

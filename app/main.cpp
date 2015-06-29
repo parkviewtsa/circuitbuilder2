@@ -26,15 +26,15 @@ int main (int argc, char **argv)
 
 void crash (int code, int isFatal)
 {
-    if (isFatal) {
-        if (QMessageBox(QMessageBox::Critical, tr("Fatal Error"),
-            tr(get_error_string(code)), QMessageBox::Abort | QMessageBox::Retry)
-            .exec() == QMessageBox::Retry) return 1;
-        else qApp->exit(code);
-    } else {
-        if (QMessageBox(QMessageBox::Warning, tr("Error"),
-            tr(get_error_string(code)), QMessageBox::OK | QMessageBox::Retry)
-            .exec() == QMessageBox::Retry) return 1;
-        else return 0;
-    }
+  if (isFatal) {
+    if (QMessageBox(QMessageBox::Critical, tr("Fatal Error"),
+      tr(get_error_string(code)), QMessageBox::Abort | QMessageBox::Retry)
+      .exec() == QMessageBox::Retry) return 1;
+    else qApp->exit(code);
+  } else {
+    if (QMessageBox(QMessageBox::Warning, tr("Error"),
+      tr(get_error_string(code)), QMessageBox::OK | QMessageBox::Retry)
+      .exec() == QMessageBox::Retry) return 1;
+    else return 0;
+  }
 }

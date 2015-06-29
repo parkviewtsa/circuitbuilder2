@@ -30,7 +30,7 @@ cbComponent* cb_CreateComponent (int type)
 {
   int len = strlen(SYMBOL_DIR) + 8;
   char path[len+1];
-  snprintf(path, len, "%s%03d%s", SYMBOL_DIR, type, ".cbip");
+  snprintf(path, len, "%s%02x%s", SYMBOL_DIR, type, ".cbip");
 
   cbComponent* ret = malloc(sizeof(cbComponent));
   *ret = {
