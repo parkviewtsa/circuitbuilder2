@@ -368,23 +368,43 @@ void CaptureScreen ()
     free(thumbnail_save_path);
     SDL_FreeSurface(screen);
 };
-void Save ()
+void consolebar ()
 {
-    FILE* file;
-    char* pathtext;
-    slBU pathid = 0;
+    for (Uint8 i = 0; i < 64; i++) putchar('-');
+    putchar('\n');
+};
+char* GETLINE ()
+{
+    char* buf = NULL;
+    slBU len = 0;
     while (true)
     {
-        asprintf(&pathtext,"new-symbol-%lu.cbip",pathid);
-        file = fopen(pathtext,"r");
-        if (!file) break;
-        fclose(file);
-        free(pathtext);
-        pathid++;
+        char cc = getchar();
+        if (cc == '\n') break;
+        buf = realloc(buf,len + 1);
+        *(buf + len) = cc;
+        len++;
     };
-    asprintf(&thumbnail_save_path,"new-thumbnail-%lu.png",pathid);
-	file = fopen(pathtext,"w");
-	free(pathtext);
+    buf = realloc(buf,len + 1);
+    *(buf + len) = '\0';
+    return buf;
+};
+void Save ()
+{
+    SDL_HideWindow(slWindow);
+    consolebar();
+    printf("Enter File Name\n");
+    char* _path = GETLINE();
+    consolebar();
+    putchar('\n');
+    SDL_ShowWindow(slWindow);
+    char* path;
+    asprintf(&path,"%s.mcf",_path);
+    asprintf(&thumbnail_save_path,"%s (thumnail).png",_path);
+    free(_path);
+    FILE* file;
+	file = fopen(path,"w");
+	free(path);
 	if (file)
 	{
 		fprintf(file,"%u",LineCount);
@@ -417,27 +437,187 @@ void Save ()
 	}
 	else SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING,"File I/O Error","Can't open output file for writing.",NULL);
 };
+struct crLine
+{
+	slScalar x1,y1,x2,y2;
+};
+struct crCircle
+{
+    slScalar x,y,r;
+};
+struct crProto
+{
+	crLine* lines;
+	slBU linecount;
+	crCircle* circles;
+	slBU circlecount;
+};
+crProto* crLoadProto (char* path) /// If NULL, something went wrong.
+{
+	if (!path) return NULL;
+	printf("path ok\n");
+	slBU i;
+	FILE* file = fopen(path,"r");
+	if (!file) goto FAIL_5;
+	printf("file ok\n");
+	// Get number of lines.
+	long unsigned linecount;
+	if (!fscanf(file,"%lu",&linecount)) goto FAIL_4;
+	// Get actual lines.
+	crLine* lines = (crLine*)malloc(sizeof(crLine) * linecount);
+	if (!lines) goto FAIL_4;
+	// Get number of circles.
+	slBU circlecount;
+	if (!fscanf(file,"%lu",&circlecount)) goto FAIL_3;
+    // Get actual circles.
+    crCircle* circles = (crCircle*)malloc(sizeof(crCircle) * circlecount);
+    if (!circles) goto FAIL_3;
+	crProto* item = (crProto*)malloc(sizeof(crProto));
+	if (!item) goto FAIL_2;
+	size_t pathlen = strlen(path) + 1; // Include the NULL character.
+	item->linecount = linecount;
+	item->lines = lines;
+	item->circlecount = circlecount;
+	item->circles = circles;
+	printf("lines\n");
+	for (i = 0; i < linecount; i++)
+	{
+		double x1,y1,x2,y2;
+		if (fscanf(file,"%lf%lf%lf%lf",&x1,&y1,&x2,&y2) < 4) goto FAIL_1;
+		lines->x1 = x1;
+		lines->y1 = y1;
+		lines->x2 = x2;
+		lines->y2 = y2;
+		lines++;
+	};
+	printf("circles\n");
+	for (i = 0; i < circlecount; i++)
+    {
+        double x,y,r;
+        if (fscanf(file,"%lf%lf%lf",&x,&y,&r) < 3) goto FAIL_1;
+		circles->x = x;
+		circles->y = y;
+		circles->r = r;
+		circles++;
+    };
+    printf("closing\n");
+	fclose(file);
+	printf("done\n");
+	// Now add this to the cache.
+	return item;
+	// Cleaning up after errors (this section not reached if nothing went wrong).
+    FAIL_1:
+    free(item); // Avoid a memory leak.
+    FAIL_2:
+    free(circles); // Avoid a memory leak.
+    FAIL_3:
+    free(lines); // Avoid a memory leak.
+    FAIL_4:
+    fclose(file); // Let it go. Elsa the file will be frozen until the app exits.
+    FAIL_5:
+    return NULL;
+};
+void newfile ()
+{
+    while (LineCount)
+    {
+        Line* line = *Lines;
+        slDestroyBox(line->endpoint1);
+        slDestroyBox(line->endpoint2);
+        slRemoveItemFromList(&Lines,&LineCount,line);
+    };
+    while (CircleCount)
+    {
+        Circle* circle = *Circles;
+        slDestroyBox(circle->center);
+        slDestroyBox(circle->radius);
+        slRemoveItemFromList(&Circles,&CircleCount,circle);
+    };
+};
+void loadfile ()
+{
+    SDL_HideWindow(slWindow);
+    consolebar();
+    printf("Enter File Name\n");
+    char* path = GETLINE();
+    crProto* proto = crLoadProto(path);
+    free(path);
+    if (proto)
+    {
+        newfile();
+        slBU cur;
+        for (cur = 0; cur < proto->linecount; cur++)
+        {
+            crLine line = *(proto->lines + cur);
+            CreateLine();
+            Line* nl = *(Lines + (LineCount - 1));
+            nl->endpoint1->x = (line.x1 + 1) / 2;
+            nl->endpoint1->x += nl->endpoint1->w / 2;
+            nl->endpoint1->y = (line.y1 + 1) / 2;
+            nl->endpoint1->y += nl->endpoint1->h / 2;
+            nl->endpoint2->x = (line.x2 + 1) / 2;
+            nl->endpoint2->x += nl->endpoint2->w / 2;
+            nl->endpoint2->y = (line.y2 + 1) / 2;
+            nl->endpoint2->y += nl->endpoint2->h / 2;
+        };
+        for (cur = 0; cur < proto->circlecount; cur++)
+        {
+            crCircle circle = *(proto->circles + cur);
+            CreateCircle();
+            Circle* nc = *(Circles + (CircleCount - 1));
+            nc->center->x = (circle.x + 1) / 2;
+            nc->center->x += nc->center->w / 2;
+            nc->center->y = (circle.y + 1) / 2;
+            nc->center->y += nc->center->h / 2;
+            nc->radius->x = (circle.x + 1) / 2;
+            nc->radius->x += nc->radius->w / 2;
+            nc->radius->y = (circle.y + 1) / 2;
+            nc->radius->y += nc->radius->h / 2;
+        };
+        free(proto->lines);
+        free(proto->circles);
+        free(proto);
+        printf("File loaded successfully!\n");
+    }
+    else printf("Couldn't load the file!\n");
+    consolebar();
+    SDL_ShowWindow(slWindow);
+    putchar('\n');
+};
 int main ()
 {
 	printf("Instructions...\n\n");
-	printf(
-		"Spawn New Line: PRESS [SPACE]\n\
-		Spawn New Circle: PRESS [X]\n\
-		Modify Point: HOLD [LEFT MOUSE]\n\
-		Delete Line or Circle: PRESS [RIGHT MOUSE]\n\
-		Save Symbol: PRESS [ENTER]\n\
-		Crop Image: PRESS [C]\n\
-		Snap to Axis Angles: HOLD [LEFT SHIFT]\n\
-		Snap to 10x10 Grid: HOLD [LEFT CONTROL]\n\
-		Snap to Other Objects: HOLD [ALT]\n\
-		\n\
-		If using grid snapping and object snapping,\n\
-		object snapping takes precedence.\n\
-		\n"
+	printf("\
+    Spawn New Line: PRESS [SPACE]\n\
+    Spawn New Circle: PRESS [X]\n\
+    Modify Point: HOLD [LEFT MOUSE]\n\
+    Delete Line or Circle: PRESS [RIGHT MOUSE]\n\
+    Save Symbol: PRESS [ENTER]\n\
+    Crop Image: PRESS [C]\n\
+    Snap to Axis Angles: HOLD [LEFT SHIFT]\n\
+    Snap to 10x10 Grid: HOLD [LEFT CONTROL]\n\
+    Snap to Other Objects: HOLD [ALT]\n\
+    Clear Everything: PRESS [N]\n\
+    Load File: PRESS [L]\n\
+    \n\
+    If using grid snapping and object snapping,\n\
+    object snapping takes precedence.\n\
+    \n"
 	);
 	printf("Press enter to continue.\n");
 	getchar();
 	slInit();
+    // We need the window to have a 1:1 ratio of width to height,
+    // because otherwise symbols may appear warped.
+    int winw,winh;
+    SDL_GetWindowSize(slWindow,&winw,&winh);
+    if (winw != winh)
+    {
+        if (winw > winh) winw = winh;
+        SDL_SetWindowSize(slWindow,winw,winw);
+    };
+	SDL_SetWindowPosition(slWindow,SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED);
+	SDL_SetWindowTitle(slWindow,"MicroCAD");
 	slCustomDrawStage_Middle = Draw;
 	slKeyBind* click = slGetKeyBind("Modify Point",0,1);
 	click->onpress = Grab;
@@ -450,6 +630,8 @@ int main ()
 	slKeyBind* snap90 = slGetKeyBind("Snap to Axis Angles",SDLK_LSHIFT,0);
 	slKeyBind* snapGrid = slGetKeyBind("Snap to 10x10 Grid",SDLK_LCTRL,0);
 	slKeyBind* snapObjects = slGetKeyBind("Snap to Other Objects",SDLK_LALT,0);
+	slGetKeyBind("Load File",SDLK_l,0)->onpress = loadfile;
+	slGetKeyBind("New File",SDLK_n,0)->onpress = newfile;
 	while (!slExitReq)
 	{
 		slCycle();
