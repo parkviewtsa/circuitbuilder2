@@ -27,3 +27,5 @@
 #define CB_ERR_UNKNOWN	-1	// For when you just don't know what happened.
 
 extern char* get_error_string (int);
+
+#endif

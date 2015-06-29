@@ -11,10 +11,16 @@ SOURCES += main.cpp \
     menus.cpp \
     content_area.cpp \
     toolbar.cpp \
-    canvas.cpp
+    canvas.cpp \
+    draggable.cpp \
+    pallette.cpp \
+    errstring.cpp
+
 QT += widgets
 
 HEADERS += \
     content_area.h \
     toolbar.h \
-    canvas.h
+    canvas.h \
+    draggable.h \
+    pallette.h \

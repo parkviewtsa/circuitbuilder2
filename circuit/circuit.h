@@ -50,14 +50,14 @@
 
 #define SYMBOL_DIR "symbols/"
 
-typedef struct {
+typedef struct cbComponent {
   int type;
   cbComponent* from;
   cbComponent* to;
   crItem* draw_item;
 } cbComponent;
 
-typedef struct {
+typedef struct cbHeader {
   int comp_count;
   int table_cap;
   // more properties?

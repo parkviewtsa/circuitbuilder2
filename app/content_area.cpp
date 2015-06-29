@@ -1,13 +1,12 @@
 #include <QtWidgets>
 
-#include "toolbar.h"
 #include "content_area.h"
 
 CB_ContentArea::CB_ContentArea()
 {
     toolbar = new CB_Toolbar();
     //pallette = new CB_Pallette();
-    canvas = new CB_Canvas()->init();
+    canvas = (new CB_Canvas())->init();
 
     QGridLayout* layout = new QGridLayout();
     layout->addWidget(toolbar, 0, 0, 1, 2);
